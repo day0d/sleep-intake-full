@@ -60,7 +60,7 @@ export default function IntakeForm() {
     const result = await schema.safeParseAsync(values);
 
     if (!result.success) {
-      result.error.errors.forEach((err) => {
+      result.error.issues.forEach((err) => {
         const field = err.path.join(".") as keyof FormData;
         form.setError(field, { message: err.message });
       });

@@ -25,9 +25,7 @@ export const sleepSetupSchema = z
     phoneLocation: z.string().min(1, "Please tell us where you put your phone"),
     itemsOwned: z.array(z.string()).default([]),
     blueLightGlassesColor: z.string().optional(),
-    sharesBedWithPartner: z.boolean({
-      required_error: "Please select yes or no",
-    }),
+    sharesBedWithPartner: z.boolean({ error: "Please select yes or no" }),
     sharesBlanketWithPartner: z.boolean().optional(),
     bedtimeWear: z.string().min(1, "Please tell us what you wear to bed"),
     bedroomOtherUses: z.string().min(1, "Please tell us how else you use your bedroom"),
@@ -63,7 +61,7 @@ export const signalsSchema = z.object({
     .array(z.string())
     .min(1, "Please select at least one option"),
   sweatingShivering: z.enum(["sweating", "shivering", "both", "no"], {
-    required_error: "Please select an option",
+    error: "Please select an option",
   }),
 });
 
