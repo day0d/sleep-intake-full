@@ -7,8 +7,6 @@ const IMAGE_OPTIONS = {
   useWebWorker: true,
 };
 
-const VIDEO_MAX_SIZE_MB = 100;
-
 export function generateSubmissionId(): string {
   return crypto.randomUUID();
 }
@@ -59,31 +57,3 @@ export async function uploadImage(
   return path;
 }
 
-export async function uploadVideo(
-  file: File,
-  fileName: string,
-  submissionId: string,
-  onProgress?: (progress: number) => void
-): Promise<string> {
-  if (file.size > VIDEO_MAX_SIZE_MB * 1024 * 1024) {
-    throw new Error(`Video must be under ${VIDEO_MAX_SIZE_MB}MB`);
-  }
-
-  onProgress?.(10);
-  const { signedUrl, token, path } = await getSignedUploadUrl(
-    fileName,
-    submissionId
-  );
-
-  onProgress?.(30);
-  const { error } = await supabase.storage
-    .from("submissions")
-    .uploadToSignedUrl(path, token, file, {
-      contentType: file.type,
-    });
-
-  if (error) throw new Error(error.message);
-
-  onProgress?.(100);
-  return path;
-}

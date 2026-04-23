@@ -1,11 +1,11 @@
 # Sleep Environment Assessment — Intake App Design Spec
 
-**Date:** 2026-04-16
-**Status:** Approved
+**Date:** 2026-04-16 (updated 2026-04-20)
+**Status:** Approved / In Production
 
 ## Overview
 
-A mobile-first web app where sleep consulting clients submit photos, a video walkthrough, and answer questions about their sleep environment before a discovery call. Submission data is structured for easy AI consumption when generating private reports.
+A mobile-first web app where sleep consulting clients submit photos and answer questions about their sleep environment before a discovery call. Submission data is structured for easy AI consumption when generating private reports.
 
 ## Decisions Summary
 
@@ -15,25 +15,37 @@ A mobile-first web app where sleep consulting clients submit photos, a video wal
 | Framework | Next.js (App Router) + TypeScript | Modern React, SSR-capable, Vercel-native |
 | Styling | Tailwind CSS + shadcn/ui | Utility-first, accessible components |
 | Hosting | Vercel (Hobby plan) | Free for non-commercial use during dev |
-| Database | Supabase (free tier) | Structured submission records |
-| File storage | Supabase Storage (free tier) | Photos, video, and per-submission markdown docs |
+| File storage | Pluggable adapter (Google Drive or Supabase) | Switched via `STORAGE_PROVIDER` env var |
+| Active storage | Google Drive (service account) | Organized folder structure, shareable links |
 | Email | Resend (free tier) | Lightweight notification with links |
 | Form handling | React Hook Form + Zod | Validation per-step and on final submit |
 | Booking | Notion Calendar iframe embed | Client has scheduling link ready |
-| Upload strategy | Client-side image compression, direct-to-Supabase, eager (on selection) |
-| Video compression | None for v1 (100MB file size limit) |
-| Architecture | Simple multi-step form, client-side state only, no drafts |
+| Upload strategy | Client-side compression → blobs held in state → multipart POST on final submit |
+| Video | Removed — photos only | Simplified v1 scope |
+| Architecture | Simple 7-step form, client-side state only, no drafts, no DB |
 
 ## User Flow
 
 1. Client arrives at the form via a shared link
-2. Completes 5 sections on their phone (~10-15 minutes)
-3. Section 5 embeds the Notion Calendar scheduling link
-4. Client books the call, then taps "I've booked — submit my intake"
-5. Submission saved to Supabase + markdown doc generated + admin emailed
+2. Completes 7 steps on their phone (~10 minutes)
+3. Step 7 embeds the Notion Calendar scheduling link
+4. Client books the call, then taps "Submit to receive your free sleep report"
+5. All photos + form data upload at once → Google Drive folder created → admin emailed
 6. Client sees confirmation screen
 
-The form is not considered "submitted" until the client manually confirms they've booked. Form data is held in React state until that point.
+Form data is held in React state throughout. No partial saves. Submission uploads everything in one multipart POST.
+
+## Form Steps
+
+| Step | Component | Content |
+|---|---|---|
+| 1 | `basics.tsx` | Name + email |
+| 2 | `bedroom-photos.tsx` | 3 bedroom photos: bed, nightstand, windows |
+| 3 | `bedroom-environment.tsx` | 2 light check photos: lights on, lights off (blinds closed) |
+| 4 | `living-space.tsx` | 3 evening space photos: wide shot, screens/lighting, usual spot |
+| 5 | `sleep-setup.tsx` | Sleep gear, phone location, bed sharing, bedtime wear |
+| 6 | `signals.tsx` | Sleep issues (multi-select) + sweating/shivering |
+| 7 | `booking.tsx` | Notion Calendar iframe + submit button |
 
 ## UI Design (Airbnb-Inspired)
 
@@ -44,185 +56,91 @@ The form is not considered "submitted" until the client manually confirms they'v
 - **Warm, not clinical** — off-white background, soft accent colors, playful microcopy
 
 ### Navigation Shell (every step)
-- **Top bar:** Back arrow (left), centered pill badge `"Section name . 3 of 5"`, X close (right)
-- **Bottom bar:** Sticky. "Back" on left, primary action on right (black pill button). Disabled state when required fields aren't complete.
+- **Top bar:** Back arrow (left), centered pill badge `"Section name . 3 of 7"`, spacer (right) — sticky, opaque
+- **Bottom bar:** Sticky, opaque. "Back" on left, "Next" on right (black pill button). Hidden on booking step.
 - **Content area:** White card with rounded top corners, centered content, generous vertical spacing
 
 ### Color & Typography
-- **Background:** Warm off-white/cream
-- **Cards:** White with subtle shadow or border
-- **Primary buttons:** Black pill (Airbnb style)
-- **Font:** Clean sans-serif (Inter or DM Sans), bold large headings, comfortable body text
-- **Accent:** Soft lavender or warm indigo for selected states and progress pill
+- **Background:** Warm off-white/cream (`hsl(36 33% 97%)`)
+- **Cards:** White (`hsl(0 0% 100%)`) with subtle shadow or border
+- **Primary buttons:** Dark pill (`bg-foreground text-background`)
+- **Font:** DM Sans, bold large headings
+- **Selected state:** Dark fill + light text (`border-foreground bg-foreground text-background`)
 
-### Section 1: The Basics
-- Bold centered heading: "Let's start with the basics"
-- Two stacked text inputs: Name, Email
-- Large touch targets, lots of breathing room
+### Shared Style Constants (`lib/ui-styles.ts`)
+```typescript
+cardStyles.selected   // 2-column grid toggle cards (Sleep Setup, Signals)
+cardStyles.unselected
+pillStyles.selected   // Pill row toggles (Yes/No, sweating options)
+pillStyles.unselected
+```
 
-### Section 2: Show Me Your Space
-- Bold heading + gray subtitle: "Don't clean up — I want to see it as you actually live in it."
-- Labeled upload cards in a scrollable list, each with:
-  - Label (e.g., "Your bed — wide shot")
-  - Hint text (e.g., "Include the whole bed + surroundings")
-  - Tap to open camera/gallery
-  - After upload: thumbnail preview with trash icon overlay
-  - Progress indicator during compress/upload
-- Video upload card is visually distinct (taller, camera icon, labeled "Video walkthrough . 30-60 seconds")
-- Upload fields:
-  - Photo 1: Your bed (wide shot showing whole bed + surroundings)
-  - Photo 2: Your nightstand / whatever's next to your bed
-  - Photo 3: View from your bed looking at the room
-  - Photo 4: Your windows + window coverings (during the day)
-  - Video: 30-60 second walkthrough — "Daytime. Lights off. Blinds closed. Point out where light is getting in."
-  - Photo 5: Your main living space (where you spend evenings)
-  - Photo 6: The lighting you use at night (show the actual bulbs/fixtures on)
-- All uploads optional for v1. Encourage in microcopy but don't block submission.
+## Photo Keys
 
-### Section 3: Your Sleep Space Setup
-- **Phone location:** Open text input (required)
-- **Items owned:** 2-column card grid (Airbnb category style). Each item is a rounded card with icon/emoji + label. Tap to select (border highlights). Items:
-  - Sleep mask, Earplugs, Blue-light blocking glasses, Sound machine, Fan, Air conditioning, Air purifier, Weighted blanket, Temperature-regulating bed/mattress
-  - Conditional: if "Blue-light blocking glasses" selected, text input slides in: "What color are the lenses?"
-- **Share bed with partner:** Yes/No pill toggle buttons (required)
-  - Conditional: if Yes, "Share a blanket?" Yes/No pills
-- **Bedtime wear:** Open text input (required)
-- **Other bedroom uses:** Open text input (required), placeholder: "e.g., work, TV, meditation, reading"
+```
+bed               // Step 2: your bed, wide shot
+nightstand        // Step 2: nightstand / beside the bed
+windows           // Step 2: window coverings as they are now
+bedroomLightsOn   // Step 3: blinds closed, all lights on
+bedroomLightsOff  // Step 3: same spot, all lights off
+livingSpace1      // Step 4: wide shot of evening space
+livingSpace2      // Step 4: screens and lighting
+livingSpace3      // Step 4: usual spot (couch, chair)
+```
 
-### Section 4: Sleep Signals
-- **Which apply to you?** 2-column card grid (at least one required):
-  - Trouble falling asleep
-  - Frequent wakeups
-  - Sleep through but don't feel rested
-  - None of the above
-- **Wake up sweating or shivering?** Single-select pill row (required):
-  - Sweating / Shivering / Both / No
+## Storage Architecture
 
-### Section 5: Book Your Discovery Call
-- Bold heading: "Last step — book your free discovery call"
-- Subtitle: "Once you're booked, your submission comes straight to me."
-- Notion Calendar iframe filling most of the screen
-- Below iframe: black pill button "I've booked — submit my intake"
+### Adapter Pattern
+Both backends implement `StorageAdapter` (in `lib/storage/types.ts`):
+```typescript
+interface StorageAdapter {
+  createSubmissionFolder(folderName: string): Promise<string>
+  uploadFile(folderId: string, fileName: string, data: Buffer, mimeType: string): Promise<string>
+  uploadAssessment(folderId: string, fileName: string, markdown: string): Promise<string>
+  getFileUrl(pathOrId: string): Promise<string>
+  getFolderUrl(folderId: string): Promise<string>
+}
+```
 
-### Confirmation Screen
-- Centered layout
-- Checkmark or subtle illustration
-- "Thanks, [name] — you're all set."
-- "I'll review your submission and prepare for our call. If anything comes up beforehand, reply to the confirmation email."
+Switch via env var: `STORAGE_PROVIDER=google-drive` (or `supabase`).
 
-## Data Flow
+### Google Drive Folder Structure
+```
+Sleep Intake Assessments/
+  └── 2026-04-18 - John Doe - Sleep Intake/
+      ├── John-Doe_bed.jpg
+      ├── John-Doe_nightstand.jpg
+      ├── John-Doe_windows.jpg
+      ├── John-Doe_bedroom-lights-on.jpg
+      ├── John-Doe_bedroom-lights-off.jpg
+      ├── John-Doe_living-space-1.jpg
+      ├── John-Doe_living-space-2.jpg
+      ├── John-Doe_living-space-3.jpg
+      └── John-Doe_sleep-intake_2026-04-18.md
+```
 
 ### Upload Flow
-1. User taps upload card -> phone camera/gallery opens
-2. Image selected -> client-side compression via `browser-image-compression` (max 1920px wide, target ~500KB)
-3. Compressed file uploads directly to Supabase Storage (no Vercel function in path)
-4. Returned public URL stored in React Hook Form state
-5. Thumbnail preview renders on the card
-6. Video: no compression, 100MB file size limit, direct upload to Supabase Storage
+1. User selects/takes photo in the app
+2. Image compresses client-side (browser-image-compression)
+3. Blob stored in React state (`photoBlobs`)
+4. On final submit: multipart FormData POST to `/api/submit`
+5. Server creates Google Drive folder, uploads all files, sends email
 
-### Form State
-- Single `useForm()` at page level (React Hook Form)
-- Each step component receives form methods via props
-- Zod schema validates per-step on "Next" tap
-- Step navigation via `useState<number>` (no URL changes)
+## API Route
 
-### Submission Flow
-1. User taps "I've booked — submit my intake"
-2. Full Zod validation runs client-side
-3. `POST /api/submit` with JSON body (text answers + Supabase Storage URLs)
-4. Server-side:
-   a. Zod validation
-   b. Insert row into Supabase `submissions` table
-   c. Generate structured markdown doc, upload to Supabase Storage at `submissions/{id}/assessment.md`
-   d. Send notification email via Resend
-   e. Return `{ success: true, id }`
-5. Client redirects to `/confirmation?name=...`
+### `POST /api/submit`
 
-### Error Handling
-- If DB insert succeeds but email fails: submission is saved, email error logged server-side, client sees success
-- Upload failures: show error on the specific card with retry option
-- Network errors on final submit: show error message, allow retry (data is still in form state)
+**Content-Type:** `multipart/form-data`
 
-## Data Model
+**Parts:**
+- `formData` (string): JSON-encoded form fields + `submissionId`
+- `photo_{key}` (Blob): one part per uploaded photo (e.g., `photo_bed`, `photo_nightstand`)
 
-### Supabase Table: `submissions`
-
-```sql
-create table submissions (
-  id uuid primary key default gen_random_uuid(),
-  created_at timestamptz default now(),
-  name text not null,
-  email text not null,
-  phone_location text not null,
-  items_owned text[] default '{}',
-  blue_light_glasses_color text,
-  shares_bed_with_partner boolean not null,
-  shares_blanket_with_partner boolean,
-  bedtime_wear text not null,
-  bedroom_other_uses text not null,
-  sleep_signals text[] not null,
-  sweating_shivering text not null,
-  photo_urls jsonb default '{}',
-  video_url text
-);
-```
-
-### Supabase Storage Configuration
-
-- **Bucket:** `submissions` (private — client photos should not be publicly accessible)
-- **Access:** Server-side signed URLs with 7-day expiry for email links. Uploads use short-lived signed upload URLs generated by the API.
-
-### Supabase Storage Structure
-
-```
-submissions/
-  {submission-id}/
-    assessment.md       # AI-ready structured doc
-    bed.jpg
-    nightstand.jpg
-    room-view.jpg
-    windows.jpg
-    living-space.jpg
-    night-lighting.jpg
-    walkthrough.mp4
-```
-
-### AI-Ready Markdown Doc (per submission)
-
-Generated server-side on submit and stored in Supabase Storage:
-
-```markdown
-# Sleep Assessment: {name}
-## Submitted: {date}
-
-## Sleep Space Setup
-- Phone at night: "{phoneLocation}"
-- Items owned: {itemsOwned joined}
-- Blue-light glasses color: {color or "N/A"}
-- Shares bed: {yes/no}
-- Shares blanket: {yes/no or "N/A"}
-- Bedtime wear: "{bedtimeWear}"
-- Other bedroom uses: "{bedroomOtherUses}"
-
-## Sleep Signals
-- Issues: {sleepSignals joined}
-- Sweating/shivering: {sweatingShivering}
-
-## Photos
-- Bed: {url or "Not uploaded"}
-- Nightstand: {url or "Not uploaded"}
-- Room view: {url or "Not uploaded"}
-- Windows: {url or "Not uploaded"}
-- Living space: {url or "Not uploaded"}
-- Night lighting: {url or "Not uploaded"}
-
-## Video
-- Walkthrough: {url or "Not uploaded"}
-```
+**Response:** `{ success: true, id: string }`
 
 ## Email Notification (to Admin)
 
-Sent via Resend on each submission. Lightweight — links only:
+Sent via Resend on each submission.
 
 **Subject:** `New Sleep Assessment: {name}`
 
@@ -231,116 +149,104 @@ Sent via Resend on each submission. Lightweight — links only:
 New submission from {name} ({email})
 Submitted: {timestamp}
 
-Assessment doc: {link to assessment.md in Supabase Storage}
-Media folder: {link to submissions/{id}/ in Supabase Storage}
+Folder: {Google Drive folder URL}
+
+Assessment: {assessment.md URL}
+
+Photos:
+bed: {url}
+nightstand: {url}
+...
 ```
 
-## API Route
+## Assessment Markdown (per submission)
 
-### `POST /api/submit`
+Generated server-side, stored as `{Name-Slug}_sleep-intake_{YYYY-MM-DD}.md` in Drive:
 
-**Request body** (JSON):
-```typescript
-{
-  name: string
-  email: string
-  photoUrls: {
-    bed?: string
-    nightstand?: string
-    roomView?: string
-    windows?: string
-    livingSpace?: string
-    nightLighting?: string
-  }
-  videoUrl?: string
-  phoneLocation: string
-  itemsOwned: string[]
-  blueLightGlassesColor?: string
-  sharesBedWithPartner: boolean
-  sharesBlanketWithPartner?: boolean
-  bedtimeWear: string
-  bedroomOtherUses: string
-  sleepSignals: string[]
-  sweatingShivering: "sweating" | "shivering" | "both" | "no"
-}
+```markdown
+# Sleep Assessment: {name}
+## Submitted: {date}
+
+## Sleep Space Setup
+- Phone at night: "..."
+- Items owned: ...
+- Blue-light glasses color: ...
+- Shares bed: yes/no
+- Shares blanket: yes/no/N/A
+- Bedtime wear: "..."
+- Other bedroom uses: "..."
+
+## Sleep Signals
+- Issues: ...
+- Sweating/shivering: ...
+
+## Photos
+- Bed: {url or "Not uploaded"}
+...
 ```
 
-**Response:** `{ success: true, id: string }`
+## Environment Variables
 
-## Project Structure
+```env
+STORAGE_PROVIDER=google-drive        # or "supabase"
+GOOGLE_SERVICE_ACCOUNT_KEY={...}     # JSON string of service account key
+GOOGLE_DRIVE_FOLDER_ID=1abc...       # Parent folder ID in Google Drive
+RESEND_API_KEY=re_...
+ADMIN_EMAIL=...
+NEXT_PUBLIC_NOTION_CALENDAR_URL=...
+```
+
+## Project Structure (current)
 
 ```
 SleepIntake/
   app/
     layout.tsx
-    page.tsx                  # Multi-step intake form
-    confirmation/
-      page.tsx                # Post-submit confirmation
-    api/
-      submit/
-        route.ts              # POST: DB insert + markdown gen + email
+    page.tsx                       # 7-step form shell
+    confirmation/page.tsx
+    api/submit/route.ts            # Multipart POST handler
+    api/upload-url/route.ts        # Legacy Supabase signed URL (unused in GDrive mode)
+    globals.css                    # CSS variables — must use hsl() wrappers for Tailwind v4
   components/
     form-steps/
-      basics.tsx              # Section 1: Name + Email
-      photos.tsx              # Section 2: Photo/video uploads
-      sleep-setup.tsx         # Section 3: Sleep space questions
-      signals.tsx             # Section 4: Sleep signals
-      booking.tsx             # Section 5: Notion Calendar + confirm
+      basics.tsx
+      bedroom-photos.tsx
+      bedroom-environment.tsx
+      living-space.tsx
+      sleep-setup.tsx
+      signals.tsx
+      booking.tsx
     progress-bar.tsx
-    file-upload.tsx            # Compress + upload to Supabase
-    ui/                        # shadcn/ui components
+    file-upload.tsx                # Compress + store blob in callback
+    ui/                            # shadcn/ui components
   lib/
-    supabase.ts               # Supabase client setup
-    upload.ts                  # Client-side compress + upload
-    schema.ts                  # Zod validation schemas
+    storage/
+      types.ts                     # StorageAdapter interface + naming helpers
+      google-drive.ts              # Google Drive adapter
+      supabase.ts                  # Supabase adapter
+      index.ts                     # Factory: reads STORAGE_PROVIDER, returns adapter
+    compress.ts                    # Client-side image compression only (no upload)
+    schema.ts                      # Zod schemas
     types.ts
+    ui-styles.ts                   # Shared cardStyles / pillStyles constants
+    generate-assessment.ts         # Markdown generator
   docs/
-    sleep-intake-design.md    # This file
-  tailwind.config.ts
-  next.config.ts
-  package.json
+    sleep-intake-design.md         # This file
+    storage-adapter-plan.md        # Original storage migration plan (implemented)
+    storage-migration-analysis.md  # Architecture analysis that informed the migration
 ```
 
-## Validation Rules
+## Known Tailwind v4 Gotcha
 
-- Name: required, non-empty
-- Email: required, valid email format
-- All Section 2 uploads: optional (encouraged in microcopy)
-- Phone location: required
-- Items owned: optional (multi-select)
-- Shares bed with partner: required
-- Bedtime wear: required
-- Bedroom other uses: required
-- Sleep signals: at least one checked
-- Sweating/shivering: required selection
-
-## Dependencies
-
-```json
-{
-  "next": "latest",
-  "react": "latest",
-  "react-dom": "latest",
-  "react-hook-form": "latest",
-  "@hookform/resolvers": "latest",
-  "zod": "latest",
-  "@supabase/supabase-js": "latest",
-  "resend": "latest",
-  "browser-image-compression": "latest",
-  "tailwindcss": "latest",
-  "@tailwindcss/forms": "latest"
-}
-```
-
-Plus shadcn/ui components added via CLI.
+CSS custom properties in `:root` must be complete CSS color values (e.g., `hsl(36 33% 97%)`), NOT bare HSL components (`36 33% 97%`). The v3 convention of bare values doesn't work with Tailwind v4's `@theme inline` — the browser receives an invalid color string and ignores it entirely.
 
 ## Out of Scope for v1
 
 - AI report generation in the app
 - Payment processing
 - User accounts / client login
-- Admin dashboard (stretch goal)
+- Admin dashboard
 - Partial save / draft resumption
+- Video upload
 - Multi-language support
 - Analytics
-- Video compression

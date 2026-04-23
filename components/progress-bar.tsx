@@ -6,9 +6,14 @@ interface ProgressBarProps {
 
 const SECTION_NAMES = [
   "The Basics",
-  "Your Space",
-  "Sleep Setup",
-  "Sleep Signals",
+  "Sleep Schedule",
+  "Sleep Quality",
+  "Your Bedroom",
+  "Evening Habits",
+  "Morning Habits",
+  "Food & Drink",
+  "Movement",
+  "Body Signals",
   "Book a Call",
 ];
 

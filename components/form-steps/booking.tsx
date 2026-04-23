@@ -7,19 +7,28 @@ interface BookingProps {
   calendarUrl: string;
   isSubmitting: boolean;
   onSubmit: () => void;
+  name: string;
+  email: string;
 }
 
-export function Booking({ calendarUrl, isSubmitting, onSubmit }: BookingProps) {
+export function Booking({
+  calendarUrl,
+  isSubmitting,
+  onSubmit,
+  name,
+  email,
+}: BookingProps) {
   return (
     <div className="px-6 py-8">
       <h1 className="text-center text-2xl font-bold text-foreground">
-        Last step — book your free discovery call
+        Book your free discovery call
       </h1>
       <p className="mt-2 text-center text-sm text-muted-foreground">
-        Once you&apos;re booked, your submission comes straight to me.
+        Book a time below, then tap submit to receive your free sleep
+        environment report.
       </p>
 
-      <div className="mt-6 overflow-hidden rounded-2xl border border-border">
+      <div className="mt-4 overflow-hidden rounded-2xl border border-border">
         <iframe
           src={calendarUrl}
           className="h-[500px] w-full border-0"
@@ -32,7 +41,7 @@ export function Booking({ calendarUrl, isSubmitting, onSubmit }: BookingProps) {
           type="button"
           onClick={onSubmit}
           disabled={isSubmitting}
-          className="w-full rounded-full bg-foreground py-6 text-base font-semibold text-background hover:bg-foreground/90"
+          className="w-full rounded-full bg-red-600 py-6 text-base font-semibold text-white shadow-lg hover:bg-red-700"
         >
           {isSubmitting ? (
             <>
@@ -40,7 +49,7 @@ export function Booking({ calendarUrl, isSubmitting, onSubmit }: BookingProps) {
               Submitting...
             </>
           ) : (
-            "I\u2019ve booked \u2014 submit my intake"
+            "Submit to receive your free sleep report"
           )}
         </Button>
       </div>

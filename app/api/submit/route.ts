@@ -1,13 +1,28 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
-import { createServerSupabase } from "@/lib/supabase-server";
 import { fullFormSchema } from "@/lib/schema";
 import { generateAssessment } from "@/lib/generate-assessment";
+import {
+  getStorageAdapter,
+  buildFolderName,
+  buildAssessmentFileName,
+} from "@/lib/storage";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: Request) {
-  const body = await request.json();
+  // Parse multipart form data
+  const formData = await request.formData();
+  const rawFormData = formData.get("formData");
+
+  if (!rawFormData || typeof rawFormData !== "string") {
+    return NextResponse.json(
+      { error: "Missing form data" },
+      { status: 400 }
+    );
+  }
+
+  const body = JSON.parse(rawFormData);
   const { submissionId, ...formFields } = body;
   const result = fullFormSchema.safeParse(formFields);
 
@@ -19,73 +34,50 @@ export async function POST(request: Request) {
   }
 
   const data = result.data;
-  const supabase = createServerSupabase();
   const now = new Date();
+  const storage = getStorageAdapter();
 
-  // 1. Insert submission record
-  const { data: submission, error: dbError } = await supabase
-    .from("submissions")
-    .insert({
-      id: submissionId,
-      name: data.name,
-      email: data.email,
-      phone_location: data.phoneLocation,
-      items_owned: data.itemsOwned,
-      blue_light_glasses_color: data.blueLightGlassesColor || null,
-      shares_bed_with_partner: data.sharesBedWithPartner,
-      shares_blanket_with_partner: data.sharesBlanketWithPartner ?? null,
-      bedtime_wear: data.bedtimeWear,
-      bedroom_other_uses: data.bedroomOtherUses,
-      sleep_signals: data.sleepSignals,
-      sweating_shivering: data.sweatingShivering,
-      photo_urls: data.photoUrls || {},
-      video_url: data.videoUrl || null,
-    })
-    .select("id")
-    .single();
-
-  if (dbError) {
+  // 1. Create submission folder with clear naming
+  const folderName = buildFolderName(data.name, now);
+  let folderId: string;
+  try {
+    folderId = await storage.createSubmissionFolder(folderName);
+  } catch (err) {
+    console.error("Failed to create submission folder:", err);
     return NextResponse.json(
-      { error: "Failed to save submission" },
+      { error: "Failed to create storage folder" },
       { status: 500 }
     );
   }
 
   // 2. Generate and upload assessment markdown
-  const markdown = generateAssessment(data, now);
-  const assessmentPath = `${submissionId}/assessment.md`;
+  let assessmentId: string | null = null;
+  try {
+    const markdown = generateAssessment(data, now);
+    const assessmentFileName = buildAssessmentFileName(data.name, now);
+    assessmentId = await storage.uploadAssessment(
+      folderId,
+      assessmentFileName,
+      markdown
+    );
+  } catch (err) {
+    console.error("Assessment upload failed:", err);
+  }
 
-  await supabase.storage
-    .from("submissions")
-    .upload(assessmentPath, new Blob([markdown], { type: "text/markdown" }), {
-      contentType: "text/markdown",
-      upsert: true,
-    });
+  // 3. Build links for email
+  let folderUrl = "";
+  let assessmentUrl = "";
 
-  // 3. Generate signed URLs for the email (7-day expiry)
-  const { data: assessmentUrl } = await supabase.storage
-    .from("submissions")
-    .createSignedUrl(assessmentPath, 60 * 60 * 24 * 7);
-
-  const mediaLinks: string[] = [];
-  if (data.photoUrls) {
-    for (const [key, path] of Object.entries(data.photoUrls)) {
-      if (path) {
-        const { data: url } = await supabase.storage
-          .from("submissions")
-          .createSignedUrl(path as string, 60 * 60 * 24 * 7);
-        if (url) mediaLinks.push(`${key}: ${url.signedUrl}`);
-      }
+  try {
+    folderUrl = await storage.getFolderUrl(folderId);
+    if (assessmentId) {
+      assessmentUrl = await storage.getFileUrl(assessmentId);
     }
-  }
-  if (data.videoUrl) {
-    const { data: url } = await supabase.storage
-      .from("submissions")
-      .createSignedUrl(data.videoUrl, 60 * 60 * 24 * 7);
-    if (url) mediaLinks.push(`Video: ${url.signedUrl}`);
+  } catch (err) {
+    console.error("Failed to generate links:", err);
   }
 
-  // 4. Send email notification (non-blocking)
+  // 4. Send email notification
   try {
     await resend.emails.send({
       from: "Sleep Intake <onboarding@resend.dev>",
@@ -94,14 +86,13 @@ export async function POST(request: Request) {
       text: `New submission from ${data.name} (${data.email})
 Submitted: ${now.toLocaleString()}
 
-Assessment doc: ${assessmentUrl?.signedUrl || "Error generating link"}
+Folder: ${folderUrl}
 
-Media:
-${mediaLinks.length > 0 ? mediaLinks.join("\n") : "No media uploaded"}`,
+Assessment: ${assessmentUrl || "Error generating link"}`,
     });
   } catch (emailError) {
     console.error("Failed to send notification email:", emailError);
   }
 
-  return NextResponse.json({ success: true, id: submission.id });
+  return NextResponse.json({ success: true, id: submissionId });
 }
