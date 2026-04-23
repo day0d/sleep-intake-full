@@ -25,11 +25,12 @@ export function generateAssessment(
   const noiseFreqLines =
     data.noiseSources && data.noiseSources.length > 0
       ? data.noiseSources
+          .filter((s) => s !== "other")
           .map((src) => {
             const freq = data.noiseFrequency?.[src] ?? "not rated";
             return `  - ${src}: ${freq}`;
           })
-          .join("\n")
+          .join("\n") || "  None"
       : "  None";
 
   return `# Sleep Assessment: ${data.name}
@@ -63,12 +64,12 @@ export function generateAssessment(
 - Window coverings: ${fmtList(data.curtainTypes)}
 - Covering opacity: ${data.curtainOpacity ?? "Not answered"}
 - Noise sources and frequency:
-${noiseFreqLines}
+${noiseFreqLines}${data.noiseOther ? `\n  - other: "${data.noiseOther}"` : ""}
 
 ## Evening Habits
 - Wind-down routine: ${fmt(data.pmRoutine)}
 - Last screen use before bed: ${data.pmPhoneWindow ?? "Not answered"}
-- Evening light location: ${fmtList(data.eveningLightLocation)}
+- Evening light type: ${fmtList(data.eveningLightLocation)}
 - Evening light tone: ${fmtList(data.eveningLightTone)}
 - Evening light intensity: ${data.eveningLightIntensity ?? "Not answered"}
 - Device screen mode: ${fmtList(data.eveningDeviceScreen)}
@@ -81,17 +82,12 @@ ${noiseFreqLines}
 - First social interaction: ${data.firstSocialWindow ?? "Not answered"}
 
 ## Food & Drink
-- Diet type: ${data.dietType ?? "Not answered"}
-- Metabolic symptoms: ${fmtList(data.metabolicSymptoms)}
-- First meal: ${data.firstMealTime ?? "Not provided"}
-- First meal variance: ${data.firstMealVariance ?? "Not answered"}
-- Last meal: ${data.lastMealTime ?? "Not provided"}
-- Last meal variance: ${data.lastMealVariance ?? "Not answered"}
-- Caffeine volume: ${data.caffeineVolume ?? "Not answered"}
-- First caffeine: ${data.firstCaffeineTime ?? "N/A"}
-- Last caffeine: ${data.lastCaffeineTime ?? "N/A"}
-- Electrolyte habits: ${fmtList(data.electrolyteHabits)}
-- Electrolyte symptoms: ${fmtList(data.electrolyteSymptoms)}
+- Caffeine sources (last 3 days): ${fmtList(data.caffeineSources)}${data.caffeineSourceOther ? ` — other: "${data.caffeineSourceOther}"` : ""}
+- First caffeine (most recent day): ${data.firstCaffeineTime ?? "N/A"}
+- Last caffeine (most recent day): ${data.lastCaffeineTime ?? "N/A"}
+- Water additions: ${fmtList(data.waterAdditions)}${data.waterAdditionOther ? ` — other: "${data.waterAdditionOther}"` : ""}
+- Alcohol in last 3 days: ${fmtBool(data.alcoholLast3Days)}
+- Evening alcohol pattern (last 1–2 weeks): ${fmtBool(data.alcoholEveningPattern)}
 
 ## Movement
 - Exercise types: ${fmtList(data.exerciseTypes)}
@@ -99,10 +95,9 @@ ${noiseFreqLines}
 - Frequency consistency: ${data.exerciseFrequencyVariance ?? "Not answered"}
 - Usual timing: ${data.exerciseTiming ?? "Not answered"}
 - Timing consistency: ${data.exerciseTimingVariance ?? "Not answered"}
-- Recovery: ${data.recovery ?? "Not answered"}
+- Recovery symptoms: ${fmtList(data.exerciseRecoverySymptoms)}
 
 ## Body Signals
-- Inflammation symptoms: ${fmtList(data.inflammationSymptoms)}
 - Supplements / medications:
 ${data.supplementsMeds ? data.supplementsMeds.split("\n").map((l) => `  - ${l.trim()}`).filter((l) => l !== "  -").join("\n") : "  None listed"}
 `;

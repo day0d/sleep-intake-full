@@ -14,6 +14,68 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PillRow } from "@/components/ui/pill-row";
 
+function CurtainIcon({ type }: { type: CurtainType }) {
+  const stroke = "currentColor";
+  const sw = 1.5;
+  return (
+    <svg width="36" height="36" viewBox="0 0 36 36" fill="none" className="text-foreground">
+      {type === "none" && (
+        <>
+          <rect x="3" y="3" width="30" height="30" rx="2" stroke={stroke} strokeWidth={sw} />
+          <line x1="9" y1="9" x2="27" y2="27" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
+          <line x1="27" y1="9" x2="9" y2="27" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
+        </>
+      )}
+      {type === "blinds" && (
+        <>
+          <rect x="3" y="3" width="30" height="30" rx="2" stroke={stroke} strokeWidth={sw} />
+          {[9, 14, 19, 24, 29].map((y) => (
+            <line key={y} x1="5" y1={y} x2="31" y2={y} stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
+          ))}
+        </>
+      )}
+      {type === "solid_shades" && (
+        <>
+          <rect x="3" y="3" width="30" height="30" rx="2" stroke={stroke} strokeWidth={sw} />
+          <rect x="3" y="3" width="30" height="14" rx="2" fill={stroke} fillOpacity="0.15" />
+          <line x1="5" y1="17" x2="31" y2="17" stroke={stroke} strokeWidth={sw} />
+          <line x1="16" y1="3" x2="16" y2="17" stroke={stroke} strokeWidth={sw * 0.8} strokeDasharray="2 2" />
+          <line x1="20" y1="3" x2="20" y2="17" stroke={stroke} strokeWidth={sw * 0.8} strokeDasharray="2 2" />
+        </>
+      )}
+      {type === "fabric_panels" && (
+        <>
+          <rect x="3" y="3" width="30" height="30" rx="2" stroke={stroke} strokeWidth={sw} />
+          <path d="M3 3 Q10 6 8 33" stroke={stroke} strokeWidth={sw} fill="none" strokeLinecap="round" />
+          <path d="M33 3 Q26 6 28 33" stroke={stroke} strokeWidth={sw} fill="none" strokeLinecap="round" />
+          <line x1="3" y1="5" x2="33" y2="5" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
+        </>
+      )}
+      {type === "film_tint" && (
+        <>
+          <rect x="3" y="3" width="30" height="30" rx="2" stroke={stroke} strokeWidth={sw} />
+          <rect x="3" y="3" width="30" height="30" rx="2" fill={stroke} fillOpacity="0.12" />
+          {[0, 1, 2, 3].map((i) => (
+            <line key={i} x1={6 + i * 8} y1="3" x2={3 + i * 8} y2="33" stroke={stroke} strokeWidth={sw * 0.6} strokeOpacity="0.4" />
+          ))}
+        </>
+      )}
+      {type === "shutters" && (
+        <>
+          <rect x="3" y="3" width="30" height="30" rx="2" stroke={stroke} strokeWidth={sw} />
+          <line x1="18" y1="3" x2="18" y2="33" stroke={stroke} strokeWidth={sw} />
+          {[9, 15, 21, 27].map((y) => (
+            <line key={y} x1="5" y1={y} x2="16" y2={y} stroke={stroke} strokeWidth={sw * 0.8} strokeLinecap="round" />
+          ))}
+          {[9, 15, 21, 27].map((y) => (
+            <line key={y} x1="20" y1={y} x2="31" y2={y} stroke={stroke} strokeWidth={sw * 0.8} strokeLinecap="round" />
+          ))}
+        </>
+      )}
+    </svg>
+  );
+}
+
 interface BedroomProps {
   form: UseFormReturn<FormData>;
 }
@@ -43,13 +105,13 @@ const TEMP_OPTIONS: { id: BedroomTemp; label: string }[] = [
   { id: "unsure", label: "Not sure" },
 ];
 
-const CURTAIN_OPTIONS: { id: CurtainType; label: string; emoji: string }[] = [
-  { id: "none", label: "None", emoji: "🚫" },
-  { id: "blinds", label: "Blinds (venetian, vertical)", emoji: "🎛️" },
-  { id: "solid_shades", label: "Solid shades (roller, honeycomb)", emoji: "🪟" },
-  { id: "fabric_panels", label: "Fabric panels (curtains, drapes)", emoji: "🏠" },
-  { id: "film_tint", label: "Film or tint", emoji: "🌫️" },
-  { id: "shutters", label: "Shutters", emoji: "🔲" },
+const CURTAIN_OPTIONS: { id: CurtainType; label: string }[] = [
+  { id: "none", label: "None" },
+  { id: "blinds", label: "Blinds (venetian, vertical)" },
+  { id: "solid_shades", label: "Solid shades (roller, honeycomb)" },
+  { id: "fabric_panels", label: "Fabric panels (curtains, drapes)" },
+  { id: "film_tint", label: "Film or tint" },
+  { id: "shutters", label: "Shutters" },
 ];
 
 const OPACITY_OPTIONS: { id: CoveringOpacity; label: string; sub: string }[] = [
@@ -65,6 +127,7 @@ const NOISE_OPTIONS: { id: NoiseSource; label: string; emoji: string }[] = [
   { id: "animals", label: "Animals", emoji: "🐾" },
   { id: "partner", label: "Partner", emoji: "👥" },
   { id: "tv_devices", label: "TV / devices", emoji: "📺" },
+  { id: "other", label: "Other", emoji: "❓" },
 ];
 
 const NOISE_FREQ_OPTIONS: { id: NoiseFrequency; label: string }[] = [
@@ -99,6 +162,7 @@ export function Bedroom({ form }: BedroomProps) {
   const curtainOpacity = watch("curtainOpacity");
   const noiseSources = watch("noiseSources") || [];
   const noiseFrequency = watch("noiseFrequency") || {};
+  const hasNoiseOther = noiseSources.includes("other");
 
   const hasCoverings = curtainTypes.length > 0 && !curtainTypes.every((c) => c === "none");
 
@@ -323,7 +387,7 @@ export function Bedroom({ form }: BedroomProps) {
                     selected ? cardStyles.selected : cardStyles.unselected
                   }`}
                 >
-                  <span className="text-2xl">{c.emoji}</span>
+                  <CurtainIcon type={c.id} />
                   <span className="text-xs font-medium leading-tight">{c.label}</span>
                 </button>
               );
@@ -383,7 +447,7 @@ export function Bedroom({ form }: BedroomProps) {
           {noiseSources.length > 0 && (
             <div className="mt-4 animate-in slide-in-from-top-2 duration-200 space-y-3">
               <Label className="text-sm font-medium">How often?</Label>
-              {noiseSources.map((src) => {
+              {noiseSources.filter((s) => s !== "other").map((src) => {
                 const srcLabel = NOISE_OPTIONS.find((o) => o.id === src)?.label;
                 return (
                   <div key={src} className="rounded-xl border border-border bg-card p-3">
@@ -408,6 +472,16 @@ export function Bedroom({ form }: BedroomProps) {
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {hasNoiseOther && (
+            <div className="mt-3 animate-in slide-in-from-top-2 duration-200">
+              <Input
+                placeholder="Describe what else disturbs you…"
+                className="h-12 rounded-xl text-base"
+                {...register("noiseOther")}
+              />
             </div>
           )}
         </div>

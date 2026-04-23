@@ -21,7 +21,8 @@ export type NoiseSource =
   | "street_traffic"
   | "animals"
   | "partner"
-  | "tv_devices";
+  | "tv_devices"
+  | "other";
 export type NoiseFrequency = "rarely" | "sometimes" | "often";
 
 export type PmPhoneWindow = "in_bed" | "30m" | "1h" | "2h+" | "not_sure";
@@ -44,22 +45,8 @@ export type FirstSocialWindow =
   | "4h+"
   | "varies";
 
-export type DietType =
-  | "standard"
-  | "mediterranean"
-  | "low_carb"
-  | "keto"
-  | "carnivore"
-  | "vegetarian"
-  | "vegan"
-  | "paleo"
-  | "intermittent_fasting"
-  | "none";
-
-export type CaffeineVolume = "none" | "1_cup" | "2_3_cups" | "4_plus";
 export type ExerciseFrequency = "0" | "1-2" | "3-4" | "5-6" | "7";
-export type ExerciseTiming = "am" | "midday" | "pm" | "evening" | "varies";
-export type Recovery = "great" | "ok" | "struggling";
+export type ExerciseTiming = "morning" | "midday" | "late_afternoon" | "evening" | "varies";
 
 export type WakeupType =
   | "pain"
@@ -105,6 +92,7 @@ export interface FormData {
   curtainOpacity?: CoveringOpacity;
   noiseSources: NoiseSource[];
   noiseFrequency: Partial<Record<NoiseSource, NoiseFrequency>>;
+  noiseOther?: string;
 
   // Step 5: Evening Habits
   pmRoutine?: string;
@@ -122,17 +110,14 @@ export interface FormData {
   firstSocialWindow?: FirstSocialWindow;
 
   // Step 7: Food & Drink
-  dietType?: DietType;
-  metabolicSymptoms: string[];
-  firstMealTime?: string;
-  firstMealVariance?: Variance;
-  lastMealTime?: string;
-  lastMealVariance?: Variance;
+  caffeineSources: string[];
+  caffeineSourceOther?: string;
   firstCaffeineTime?: string;
   lastCaffeineTime?: string;
-  caffeineVolume?: CaffeineVolume;
-  electrolyteHabits: string[];
-  electrolyteSymptoms: string[];
+  waterAdditions: string[];
+  waterAdditionOther?: string;
+  alcoholLast3Days?: boolean;
+  alcoholEveningPattern?: boolean;
 
   // Step 8: Movement
   exerciseTypes: string[];
@@ -140,10 +125,9 @@ export interface FormData {
   exerciseFrequencyVariance?: Variance;
   exerciseTiming?: ExerciseTiming;
   exerciseTimingVariance?: Variance;
-  recovery?: Recovery;
+  exerciseRecoverySymptoms: string[];
 
   // Step 9: Body Signals
-  inflammationSymptoms: string[];
   supplementsMeds?: string;
 }
 

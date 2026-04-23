@@ -50,39 +50,26 @@ export const bedroomSchema = z.object({
   sharesBedWithPartner: z.boolean().optional(),
   sharesBlanketWithPartner: z.boolean().optional(),
   bedroomOtherUses: z.string().optional(),
-  nighttimeTemp: z
-    .enum(["<65", "65-68", "68-72", ">72", "unsure"])
-    .optional(),
+  nighttimeTemp: z.enum(["<65", "65-68", "68-72", ">72", "unsure"]).optional(),
   curtainTypes: z
-    .array(
-      z.enum(["none", "blinds", "solid_shades", "fabric_panels", "film_tint", "shutters"])
-    )
+    .array(z.enum(["none", "blinds", "solid_shades", "fabric_panels", "film_tint", "shutters"]))
     .default([]),
   curtainOpacity: z
     .enum(["sheer", "light_filtering", "room_darkening", "blackout"])
     .optional(),
   noiseSources: z
-    .array(
-      z.enum([
-        "hvac_fridge",
-        "street_traffic",
-        "animals",
-        "partner",
-        "tv_devices",
-      ])
-    )
+    .array(z.enum(["hvac_fridge", "street_traffic", "animals", "partner", "tv_devices", "other"]))
     .default([]),
   noiseFrequency: z
     .record(z.string(), z.enum(["rarely", "sometimes", "often"]))
     .default({}),
+  noiseOther: z.string().optional(),
 });
 
 // Step 5 — Evening Habits
 export const eveningHabitsSchema = z.object({
   pmRoutine: z.string().optional(),
-  pmPhoneWindow: z
-    .enum(["in_bed", "30m", "1h", "2h+", "not_sure"])
-    .optional(),
+  pmPhoneWindow: z.enum(["in_bed", "30m", "1h", "2h+", "not_sure"]).optional(),
   eveningLightLocation: z.array(z.string()).default([]),
   eveningLightTone: z.array(z.string()).default([]),
   eveningLightIntensity: z.string().optional(),
@@ -106,30 +93,14 @@ export const morningHabitsSchema = z.object({
 
 // Step 7 — Food & Drink
 export const foodDrinkSchema = z.object({
-  dietType: z
-    .enum([
-      "standard",
-      "mediterranean",
-      "low_carb",
-      "keto",
-      "carnivore",
-      "vegetarian",
-      "vegan",
-      "paleo",
-      "intermittent_fasting",
-      "none",
-    ])
-    .optional(),
-  metabolicSymptoms: z.array(z.string()).default([]),
-  firstMealTime: z.string().optional(),
-  firstMealVariance: variance.optional(),
-  lastMealTime: z.string().optional(),
-  lastMealVariance: variance.optional(),
+  caffeineSources: z.array(z.string()).default([]),
+  caffeineSourceOther: z.string().optional(),
   firstCaffeineTime: z.string().optional(),
   lastCaffeineTime: z.string().optional(),
-  caffeineVolume: z.enum(["none", "1_cup", "2_3_cups", "4_plus"]).optional(),
-  electrolyteHabits: z.array(z.string()).default([]),
-  electrolyteSymptoms: z.array(z.string()).default([]),
+  waterAdditions: z.array(z.string()).default([]),
+  waterAdditionOther: z.string().optional(),
+  alcoholLast3Days: z.boolean().optional(),
+  alcoholEveningPattern: z.boolean().optional(),
 });
 
 // Step 8 — Movement
@@ -138,15 +109,14 @@ export const movementSchema = z.object({
   exerciseFrequency: z.enum(["0", "1-2", "3-4", "5-6", "7"]).optional(),
   exerciseFrequencyVariance: variance.optional(),
   exerciseTiming: z
-    .enum(["am", "midday", "pm", "evening", "varies"])
+    .enum(["morning", "midday", "late_afternoon", "evening", "varies"])
     .optional(),
   exerciseTimingVariance: variance.optional(),
-  recovery: z.enum(["great", "ok", "struggling"]).optional(),
+  exerciseRecoverySymptoms: z.array(z.string()).default([]),
 });
 
 // Step 9 — Body Signals
 export const bodySignalsSchema = z.object({
-  inflammationSymptoms: z.array(z.string()).default([]),
   supplementsMeds: z.string().optional(),
 });
 

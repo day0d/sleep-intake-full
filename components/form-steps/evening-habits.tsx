@@ -105,7 +105,7 @@ export function EveningHabits({ form }: EveningHabitsProps) {
           <div className="mt-4 space-y-5">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Location
+                Type of lighting
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {LIGHT_LOCATION.map((o) => {

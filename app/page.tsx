@@ -49,11 +49,10 @@ export default function IntakeForm() {
       eveningLightLocation: [],
       eveningLightTone: [],
       eveningDeviceScreen: [],
-      metabolicSymptoms: [],
-      electrolyteHabits: [],
-      electrolyteSymptoms: [],
+      caffeineSources: [],
+      waterAdditions: [],
       exerciseTypes: [],
-      inflammationSymptoms: [],
+      exerciseRecoverySymptoms: [],
     },
   });
 

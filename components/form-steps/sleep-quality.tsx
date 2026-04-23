@@ -13,6 +13,7 @@ interface SleepQualityProps {
 const SIGNALS = [
   { id: "Trouble falling asleep", emoji: "🌙" },
   { id: "Trouble staying asleep", emoji: "⏰" },
+  { id: "Waking up too early", emoji: "🌅" },
   { id: "Sleep isn't rejuvenating", emoji: "😩" },
 ];
 
@@ -45,7 +46,8 @@ export function SleepQuality({ form }: SleepQualityProps) {
   const hasFrequentWakeups = sleepSignals.includes("Trouble staying asleep");
   const hasLyingAwake =
     sleepSignals.includes("Trouble falling asleep") ||
-    sleepSignals.includes("Trouble staying asleep");
+    sleepSignals.includes("Trouble staying asleep") ||
+    sleepSignals.includes("Waking up too early");
   const hasOtherWakeup = wakeupTypology.includes("other");
 
   function toggleSignal(id: string) {
@@ -57,7 +59,11 @@ export function SleepQuality({ form }: SleepQualityProps) {
       setValue("wakeupTypology", [], { shouldDirty: true });
       setValue("wakeupOther", undefined, { shouldDirty: true });
     }
-    if (!next.includes("Trouble falling asleep") && !next.includes("Trouble staying asleep")) {
+    if (
+      !next.includes("Trouble falling asleep") &&
+      !next.includes("Trouble staying asleep") &&
+      !next.includes("Waking up too early")
+    ) {
       setValue("lyingAwakeState", [], { shouldDirty: true });
     }
   }

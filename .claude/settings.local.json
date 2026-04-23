@@ -5,7 +5,8 @@
       "mcp__Claude_Preview__preview_start",
       "Bash(taskkill /PID 17548 /F)",
       "Bash(taskkill //PID 17548 //F)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Read(//dev/**)"
     ]
   }
 }

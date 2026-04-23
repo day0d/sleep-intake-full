@@ -1,14 +1,8 @@
 "use client";
 
 import { UseFormReturn } from "react-hook-form";
-import {
-  FormData,
-  ExerciseFrequency,
-  ExerciseTiming,
-  Recovery,
-  Variance,
-} from "@/lib/types";
-import { cardStyles } from "@/lib/ui-styles";
+import { FormData, ExerciseFrequency, ExerciseTiming, Variance } from "@/lib/types";
+import { cardStyles, pillStyles } from "@/lib/ui-styles";
 import { Label } from "@/components/ui/label";
 import { PillRow } from "@/components/ui/pill-row";
 import { VariancePills } from "@/components/ui/variance-pills";
@@ -39,17 +33,20 @@ const FREQUENCY_OPTIONS: { id: ExerciseFrequency; label: string }[] = [
 ];
 
 const TIMING_OPTIONS: { id: ExerciseTiming; label: string }[] = [
-  { id: "am", label: "AM" },
+  { id: "morning", label: "Morning" },
   { id: "midday", label: "Midday" },
-  { id: "pm", label: "PM" },
+  { id: "late_afternoon", label: "Late afternoon" },
   { id: "evening", label: "Evening" },
   { id: "varies", label: "Varies" },
 ];
 
-const RECOVERY_OPTIONS: { id: Recovery; label: string }[] = [
-  { id: "great", label: "Great" },
-  { id: "ok", label: "OK" },
-  { id: "struggling", label: "Struggling" },
+const RECOVERY_SYMPTOMS = [
+  { id: "persistent_soreness", label: "Persistent muscle soreness (48+ hours)" },
+  { id: "persistent_stiffness", label: "Persistent stiffness" },
+  { id: "heaviness_sluggishness", label: "Heaviness / sluggishness" },
+  { id: "irregular_heart_rate", label: "Increased or irregular heart rate" },
+  { id: "frequent_illness", label: "Frequent illness" },
+  { id: "decreasing_performance", label: "Decreasing exercise performance" },
 ];
 
 export function Movement({ form }: MovementProps) {
@@ -60,7 +57,7 @@ export function Movement({ form }: MovementProps) {
   const exerciseFrequencyVariance = watch("exerciseFrequencyVariance");
   const exerciseTiming = watch("exerciseTiming");
   const exerciseTimingVariance = watch("exerciseTimingVariance");
-  const recovery = watch("recovery");
+  const exerciseRecoverySymptoms = watch("exerciseRecoverySymptoms") || [];
 
   function toggleType(id: string) {
     const next = exerciseTypes.includes(id)
@@ -69,11 +66,18 @@ export function Movement({ form }: MovementProps) {
     setValue("exerciseTypes", next, { shouldDirty: true });
   }
 
+  function toggleRecovery(id: string) {
+    const next = exerciseRecoverySymptoms.includes(id)
+      ? exerciseRecoverySymptoms.filter((s) => s !== id)
+      : [...exerciseRecoverySymptoms, id];
+    setValue("exerciseRecoverySymptoms", next, { shouldDirty: true });
+  }
+
   return (
     <div className="px-6 py-8">
       <h1 className="text-center text-2xl font-bold text-foreground">Movement</h1>
       <p className="mt-2 text-center text-sm text-muted-foreground">
-        What you do, how often, and how it feels.
+        What you do, how often, and how your body responds.
       </p>
 
       <div className="mt-8 space-y-8">
@@ -106,11 +110,9 @@ export function Movement({ form }: MovementProps) {
               options={FREQUENCY_OPTIONS}
               value={exerciseFrequency}
               onChange={(v) =>
-                setValue(
-                  "exerciseFrequency",
-                  v as ExerciseFrequency | undefined,
-                  { shouldDirty: true }
-                )
+                setValue("exerciseFrequency", v as ExerciseFrequency | undefined, {
+                  shouldDirty: true,
+                })
               }
             />
           </div>
@@ -122,11 +124,9 @@ export function Movement({ form }: MovementProps) {
             <VariancePills
               value={exerciseFrequencyVariance}
               onChange={(v) =>
-                setValue(
-                  "exerciseFrequencyVariance",
-                  v as Variance | undefined,
-                  { shouldDirty: true }
-                )
+                setValue("exerciseFrequencyVariance", v as Variance | undefined, {
+                  shouldDirty: true,
+                })
               }
             />
           </div>
@@ -153,28 +153,35 @@ export function Movement({ form }: MovementProps) {
             <VariancePills
               value={exerciseTimingVariance}
               onChange={(v) =>
-                setValue(
-                  "exerciseTimingVariance",
-                  v as Variance | undefined,
-                  { shouldDirty: true }
-                )
+                setValue("exerciseTimingVariance", v as Variance | undefined, {
+                  shouldDirty: true,
+                })
               }
             />
           </div>
         </div>
 
         <div>
-          <Label className="text-sm font-medium">How&apos;s your recovery?</Label>
-          <div className="mt-3">
-            <PillRow
-              options={RECOVERY_OPTIONS}
-              value={recovery}
-              onChange={(v) =>
-                setValue("recovery", v as Recovery | undefined, {
-                  shouldDirty: true,
-                })
-              }
-            />
+          <Label className="text-sm font-medium">
+            Any of these exercise recovery symptoms?
+          </Label>
+          <p className="mt-1 text-xs text-muted-foreground">Select all that apply.</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {RECOVERY_SYMPTOMS.map((s) => {
+              const selected = exerciseRecoverySymptoms.includes(s.id);
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => toggleRecovery(s.id)}
+                  className={`rounded-full border-2 px-4 py-2 text-sm font-medium transition-colors ${
+                    selected ? pillStyles.selected : pillStyles.unselected
+                  }`}
+                >
+                  {s.label}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

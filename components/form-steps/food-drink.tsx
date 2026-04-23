@@ -1,275 +1,212 @@
 "use client";
 
 import { UseFormReturn } from "react-hook-form";
-import {
-  FormData,
-  DietType,
-  CaffeineVolume,
-  Variance,
-} from "@/lib/types";
-import { cardStyles, pillStyles } from "@/lib/ui-styles";
+import { FormData } from "@/lib/types";
+import { pillStyles } from "@/lib/ui-styles";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { TimePicker } from "@/components/ui/time-picker";
-import { PillRow } from "@/components/ui/pill-row";
-import { VariancePills } from "@/components/ui/variance-pills";
 
 interface FoodDrinkProps {
   form: UseFormReturn<FormData>;
 }
 
-const DIET_OPTIONS: { id: DietType; label: string; emoji: string }[] = [
-  { id: "standard", label: "Standard / Mixed", emoji: "🍽️" },
-  { id: "mediterranean", label: "Mediterranean", emoji: "🥗" },
-  { id: "low_carb", label: "Low-carb", emoji: "🥩" },
-  { id: "keto", label: "Keto", emoji: "🥑" },
-  { id: "carnivore", label: "Carnivore", emoji: "🦴" },
-  { id: "vegetarian", label: "Vegetarian", emoji: "🥦" },
-  { id: "vegan", label: "Vegan", emoji: "🌱" },
-  { id: "paleo", label: "Paleo", emoji: "🍗" },
-  { id: "intermittent_fasting", label: "Intermittent fasting", emoji: "⏱️" },
-  { id: "none", label: "No approach", emoji: "❓" },
+const CAFFEINE_SOURCES = [
+  { id: "coffee", label: "Coffee" },
+  { id: "tea", label: "Tea" },
+  { id: "pre_workout", label: "Pre-workout" },
+  { id: "pills_supplements", label: "Pills / supplements" },
+  { id: "other", label: "Other" },
 ];
 
-const METABOLIC_SYMPTOMS = [
-  "Post-meal crashes",
-  "Hangry between meals",
-  "Afternoon energy slumps",
-  "Sugar cravings",
-  "Weight around midsection",
-  "Wake hungry at night",
-];
-
-const CAFFEINE_OPTIONS: { id: CaffeineVolume; label: string }[] = [
-  { id: "none", label: "None" },
-  { id: "1_cup", label: "1 cup" },
-  { id: "2_3_cups", label: "2–3 cups" },
-  { id: "4_plus", label: "4+ cups" },
-];
-
-const ELECTROLYTE_HABITS = [
-  "Salt my food / drinks",
-  "Take electrolyte mix",
-  "Mostly filtered / RO water",
-  "Don't think about it",
-];
-
-const ELECTROLYTE_SYMPTOMS = [
-  "Muscle cramps",
-  "Dizzy on standing",
-  "Headaches",
-  "Heart palpitations",
-  "General fatigue",
+const WATER_ADDITIONS = [
+  { id: "citrus_juice", label: "Citrus juice" },
+  { id: "honey_maple", label: "Honey or maple syrup" },
+  { id: "sea_salt", label: "Sea salt" },
+  { id: "trace_minerals", label: "Trace minerals" },
+  { id: "other", label: "Other" },
 ];
 
 export function FoodDrink({ form }: FoodDrinkProps) {
   const { register, setValue, watch } = form;
 
-  const dietType = watch("dietType");
-  const metabolicSymptoms = watch("metabolicSymptoms") || [];
-  const firstMealVariance = watch("firstMealVariance");
-  const lastMealVariance = watch("lastMealVariance");
-  const caffeineVolume = watch("caffeineVolume");
-  const electrolyteHabits = watch("electrolyteHabits") || [];
-  const electrolyteSymptoms = watch("electrolyteSymptoms") || [];
+  const caffeineSources = watch("caffeineSources") || [];
+  const waterAdditions = watch("waterAdditions") || [];
+  const alcoholLast3Days = watch("alcoholLast3Days");
+  const alcoholEveningPattern = watch("alcoholEveningPattern");
 
-  const noCaffeine = caffeineVolume === "none";
+  const hasCaffeine = caffeineSources.length > 0;
+  const hasCaffeineOther = caffeineSources.includes("other");
+  const hasWaterOther = waterAdditions.includes("other");
 
-  function toggleDiet(id: DietType) {
-    setValue("dietType", dietType === id ? undefined : id, {
-      shouldDirty: true,
-    });
+  function toggleCaffeine(id: string) {
+    const next = caffeineSources.includes(id)
+      ? caffeineSources.filter((s) => s !== id)
+      : [...caffeineSources, id];
+    setValue("caffeineSources", next, { shouldDirty: true });
+    if (!next.includes("other")) {
+      setValue("caffeineSourceOther", undefined, { shouldDirty: true });
+    }
+    if (next.length === 0) {
+      setValue("firstCaffeineTime", undefined, { shouldDirty: true });
+      setValue("lastCaffeineTime", undefined, { shouldDirty: true });
+    }
   }
 
-  function toggleMulti(
-    field:
-      | "metabolicSymptoms"
-      | "electrolyteHabits"
-      | "electrolyteSymptoms",
-    current: string[],
-    id: string
+  function toggleWater(id: string) {
+    const next = waterAdditions.includes(id)
+      ? waterAdditions.filter((s) => s !== id)
+      : [...waterAdditions, id];
+    setValue("waterAdditions", next, { shouldDirty: true });
+    if (!next.includes("other")) {
+      setValue("waterAdditionOther", undefined, { shouldDirty: true });
+    }
+  }
+
+  function toggleBool(
+    field: "alcoholLast3Days" | "alcoholEveningPattern",
+    val: boolean,
+    current: boolean | undefined
   ) {
-    const next = current.includes(id)
-      ? current.filter((s) => s !== id)
-      : [...current, id];
-    setValue(field, next, { shouldDirty: true });
+    setValue(field, current === val ? undefined : val, { shouldDirty: true });
   }
 
   return (
     <div className="px-6 py-8">
       <h1 className="text-center text-2xl font-bold text-foreground">Food & drink</h1>
       <p className="mt-2 text-center text-sm text-muted-foreground">
-        Diet, meal timing, caffeine, and electrolytes.
+        Caffeine, hydration, and alcohol patterns.
+      </p>
+      <p className="mt-3 rounded-xl bg-muted px-4 py-3 text-center text-xs text-muted-foreground">
+        None of this information will be shared. Answer honestly — it helps build a more accurate picture.
       </p>
 
       <div className="mt-8 space-y-8">
         <div>
-          <Label className="text-sm font-medium">What best describes your diet?</Label>
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            {DIET_OPTIONS.map((d) => {
-              const selected = dietType === d.id;
-              return (
-                <button
-                  key={d.id}
-                  type="button"
-                  onClick={() => toggleDiet(d.id)}
-                  className={`flex flex-col items-center gap-1.5 rounded-2xl border-2 px-3 py-4 text-center transition-colors ${
-                    selected ? cardStyles.selected : cardStyles.unselected
-                  }`}
-                >
-                  <span className="text-2xl">{d.emoji}</span>
-                  <span className="text-xs font-medium leading-tight">{d.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div>
-          <Label className="text-sm font-medium">Any metabolic symptoms?</Label>
+          <Label className="text-sm font-medium">
+            Any of these caffeine sources in the last 3 days?
+          </Label>
+          <p className="mt-1 text-xs text-muted-foreground">Select all that apply.</p>
           <div className="mt-3 flex flex-wrap gap-2">
-            {METABOLIC_SYMPTOMS.map((s) => {
-              const selected = metabolicSymptoms.includes(s);
+            {CAFFEINE_SOURCES.map((s) => {
+              const selected = caffeineSources.includes(s.id);
               return (
                 <button
-                  key={s}
+                  key={s.id}
                   type="button"
-                  onClick={() =>
-                    toggleMulti("metabolicSymptoms", metabolicSymptoms, s)
-                  }
+                  onClick={() => toggleCaffeine(s.id)}
                   className={`rounded-full border-2 px-4 py-2 text-sm font-medium transition-colors ${
                     selected ? pillStyles.selected : pillStyles.unselected
                   }`}
                 >
-                  {s}
+                  {s.label}
                 </button>
               );
             })}
           </div>
-        </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <Label className="text-sm font-medium">First meal</Label>
-            <div className="mt-1.5">
-              <TimePicker {...register("firstMealTime")} />
+          {hasCaffeineOther && (
+            <div className="mt-3 animate-in slide-in-from-top-2 duration-200">
+              <Input
+                placeholder="Describe other caffeine sources…"
+                className="h-12 rounded-xl text-base"
+                {...register("caffeineSourceOther")}
+              />
             </div>
-          </div>
-          <div>
-            <Label className="text-sm font-medium">Last meal</Label>
-            <div className="mt-1.5">
-              <TimePicker {...register("lastMealTime")} />
-            </div>
-          </div>
-        </div>
+          )}
 
-        <div>
-          <Label className="text-sm font-medium">How much does first meal time vary?</Label>
-          <div className="mt-3">
-            <VariancePills
-              value={firstMealVariance}
-              onChange={(v) =>
-                setValue("firstMealVariance", v as Variance | undefined, {
-                  shouldDirty: true,
-                })
-              }
-            />
-          </div>
-        </div>
-
-        <div>
-          <Label className="text-sm font-medium">How much does last meal time vary?</Label>
-          <div className="mt-3">
-            <VariancePills
-              value={lastMealVariance}
-              onChange={(v) =>
-                setValue("lastMealVariance", v as Variance | undefined, {
-                  shouldDirty: true,
-                })
-              }
-            />
-          </div>
-        </div>
-
-        <div>
-          <Label className="text-sm font-medium">How much caffeine per day?</Label>
-          <div className="mt-3">
-            <PillRow
-              options={CAFFEINE_OPTIONS}
-              value={caffeineVolume}
-              onChange={(v) => {
-                const next = v as CaffeineVolume | undefined;
-                setValue("caffeineVolume", next, { shouldDirty: true });
-                if (next === "none" || next === undefined) {
-                  setValue("firstCaffeineTime", undefined, { shouldDirty: true });
-                  setValue("lastCaffeineTime", undefined, { shouldDirty: true });
-                }
-              }}
-            />
-          </div>
-        </div>
-
-        {!noCaffeine && caffeineVolume && (
-          <div className="animate-in slide-in-from-top-2 duration-200 grid grid-cols-2 gap-3">
-            <div>
-              <Label className="text-sm font-medium">First caffeine</Label>
-              <div className="mt-1.5">
-                <TimePicker {...register("firstCaffeineTime")} />
+          {hasCaffeine && (
+            <div className="mt-4 animate-in slide-in-from-top-2 duration-200">
+              <Label className="text-sm font-medium">
+                On your most recent day of consumption, when was your first and last caffeine?
+              </Label>
+              <div className="mt-2 grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs text-muted-foreground">First</Label>
+                  <div className="mt-1">
+                    <TimePicker {...register("firstCaffeineTime")} />
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Last</Label>
+                  <div className="mt-1">
+                    <TimePicker {...register("lastCaffeineTime")} />
+                  </div>
+                </div>
               </div>
             </div>
-            <div>
-              <Label className="text-sm font-medium">Last caffeine</Label>
-              <div className="mt-1.5">
-                <TimePicker {...register("lastCaffeineTime")} />
-              </div>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
 
         <div>
-          <Label className="text-sm font-medium">Electrolyte habits?</Label>
+          <Label className="text-sm font-medium">
+            Do you add any of the following to your drinking water?
+          </Label>
+          <p className="mt-1 text-xs text-muted-foreground">Select all that apply.</p>
           <div className="mt-3 flex flex-wrap gap-2">
-            {ELECTROLYTE_HABITS.map((h) => {
-              const selected = electrolyteHabits.includes(h);
+            {WATER_ADDITIONS.map((w) => {
+              const selected = waterAdditions.includes(w.id);
               return (
                 <button
-                  key={h}
+                  key={w.id}
                   type="button"
-                  onClick={() =>
-                    toggleMulti("electrolyteHabits", electrolyteHabits, h)
-                  }
+                  onClick={() => toggleWater(w.id)}
                   className={`rounded-full border-2 px-4 py-2 text-sm font-medium transition-colors ${
                     selected ? pillStyles.selected : pillStyles.unselected
                   }`}
                 >
-                  {h}
+                  {w.label}
                 </button>
               );
             })}
+          </div>
+
+          {hasWaterOther && (
+            <div className="mt-3 animate-in slide-in-from-top-2 duration-200">
+              <Input
+                placeholder="What else do you add?"
+                className="h-12 rounded-xl text-base"
+                {...register("waterAdditionOther")}
+              />
+            </div>
+          )}
+        </div>
+
+        <div>
+          <Label className="text-sm font-medium">Did you drink alcohol in the last 3 days?</Label>
+          <div className="mt-3 flex gap-3">
+            {[true, false].map((val) => (
+              <button
+                key={String(val)}
+                type="button"
+                onClick={() => toggleBool("alcoholLast3Days", val, alcoholLast3Days)}
+                className={`flex-1 rounded-full border-2 py-3 text-sm font-medium transition-colors ${
+                  alcoholLast3Days === val ? pillStyles.selected : pillStyles.unselected
+                }`}
+              >
+                {val ? "Yes" : "No"}
+              </button>
+            ))}
           </div>
         </div>
 
         <div>
           <Label className="text-sm font-medium">
-            Any of these recently?
+            In the last 1–2 weeks, have you had alcohol in the evening to wind down or socialize?
           </Label>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {ELECTROLYTE_SYMPTOMS.map((s) => {
-              const selected = electrolyteSymptoms.includes(s);
-              return (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() =>
-                    toggleMulti("electrolyteSymptoms", electrolyteSymptoms, s)
-                  }
-                  className={`rounded-full border-2 px-4 py-2 text-sm font-medium transition-colors ${
-                    selected ? pillStyles.selected : pillStyles.unselected
-                  }`}
-                >
-                  {s}
-                </button>
-              );
-            })}
+          <div className="mt-3 flex gap-3">
+            {[true, false].map((val) => (
+              <button
+                key={String(val)}
+                type="button"
+                onClick={() => toggleBool("alcoholEveningPattern", val, alcoholEveningPattern)}
+                className={`flex-1 rounded-full border-2 py-3 text-sm font-medium transition-colors ${
+                  alcoholEveningPattern === val ? pillStyles.selected : pillStyles.unselected
+                }`}
+              >
+                {val ? "Yes" : "No"}
+              </button>
+            ))}
           </div>
         </div>
       </div>
