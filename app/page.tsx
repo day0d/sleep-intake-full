@@ -17,14 +17,13 @@ import { EveningHabits } from "@/components/form-steps/evening-habits";
 import { MorningHabits } from "@/components/form-steps/morning-habits";
 import { FoodDrink } from "@/components/form-steps/food-drink";
 import { Movement } from "@/components/form-steps/movement";
-import { BodySignals } from "@/components/form-steps/body-signals";
 import { Booking } from "@/components/form-steps/booking";
 
-const TOTAL_STEPS = 10;
+const TOTAL_STEPS = 9;
 
 const STEP_SCHEMAS = [
   basicsSchema, // 0: name + email required
-  null, null, null, null, null, null, null, null, null,
+  null, null, null, null, null, null, null, null,
 ];
 
 export default function IntakeForm() {
@@ -150,8 +149,9 @@ export default function IntakeForm() {
 
         <ProgressBar
           currentStep={step + 1}
-          totalSteps={TOTAL_STEPS}
+          totalSteps={8}
           sectionName={SECTION_NAMES[step]}
+          hideCount={isBookingStep}
         />
 
         <div className="w-9" />
@@ -168,8 +168,7 @@ export default function IntakeForm() {
           {step === 5 && <MorningHabits form={form} />}
           {step === 6 && <FoodDrink form={form} />}
           {step === 7 && <Movement form={form} />}
-          {step === 8 && <BodySignals form={form} />}
-          {step === 9 && (
+          {step === 8 && (
             <Booking
               calendarUrl={calendarUrl}
               isSubmitting={isSubmitting}
@@ -196,13 +195,23 @@ export default function IntakeForm() {
             ) : (
               <div />
             )}
-            <button
-              type="button"
-              onClick={handleNext}
-              className="rounded-full border-2 border-foreground bg-foreground px-8 py-2.5 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
-            >
-              Next
-            </button>
+            {step === TOTAL_STEPS - 2 ? (
+              <button
+                type="button"
+                onClick={handleNext}
+                className="rounded-full border-2 border-red-500 bg-red-500 px-8 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-600 hover:border-red-600"
+              >
+                Get report & book session
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleNext}
+                className="rounded-full border-2 border-foreground bg-foreground px-8 py-2.5 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
+              >
+                Next
+              </button>
+            )}
           </div>
         </div>
       )}

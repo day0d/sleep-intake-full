@@ -444,7 +444,7 @@ export function Bedroom({ form }: BedroomProps) {
             })}
           </div>
 
-          {noiseSources.length > 0 && (
+          {noiseSources.filter((s) => s !== "other").length > 0 && (
             <div className="mt-4 animate-in slide-in-from-top-2 duration-200 space-y-3">
               <Label className="text-sm font-medium">How often?</Label>
               {noiseSources.filter((s) => s !== "other").map((src) => {
@@ -477,9 +477,10 @@ export function Bedroom({ form }: BedroomProps) {
 
           {hasNoiseOther && (
             <div className="mt-3 animate-in slide-in-from-top-2 duration-200">
+              <Label className="text-sm font-medium">What wakes or disturbs you?</Label>
               <Input
                 placeholder="Describe what else disturbs you…"
-                className="h-12 rounded-xl text-base"
+                className="mt-1.5 h-12 rounded-xl text-base"
                 {...register("noiseOther")}
               />
             </div>

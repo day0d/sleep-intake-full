@@ -1,11 +1,14 @@
 "use client";
 
-import { UseFormReturn } from "react-hook-form";
+import { useEffect, useRef } from "react";
+import { UseFormReturn, useFieldArray } from "react-hook-form";
+import { Plus } from "lucide-react";
 import { FormData } from "@/lib/types";
 import { pillStyles } from "@/lib/ui-styles";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { TimePicker } from "@/components/ui/time-picker";
+import { Textarea } from "@/components/ui/textarea";
 
 interface FoodDrinkProps {
   form: UseFormReturn<FormData>;
@@ -27,8 +30,39 @@ const WATER_ADDITIONS = [
   { id: "other", label: "Other" },
 ];
 
+const PLACEHOLDERS = [
+  "e.g., Eggs benedict, orange juice",
+  "e.g., Protein bar",
+  "e.g., Turkey sandwich, chips",
+  "e.g., Ice cream cone"
+];
+
 export function FoodDrink({ form }: FoodDrinkProps) {
-  const { register, setValue, watch } = form;
+  const { register, setValue, watch, control } = form;
+
+  const { fields, append } = useFieldArray({
+    control,
+    name: "foodLog",
+  });
+
+  const initialized = useRef(false);
+  useEffect(() => {
+    if (fields.length === 0 && !initialized.current) {
+      initialized.current = true;
+      append([
+        { items: "", mealType: "meal", location: "" },
+        { items: "", mealType: "snack", location: "" },
+        { items: "", mealType: "meal", location: "" },
+        { items: "", mealType: "snack", location: "" },
+      ]);
+    }
+  }, [fields.length, append]);
+
+  const foodLog = watch("foodLog") || [];
+  const filledEntries = foodLog.filter(entry => entry.items && entry.items.trim().length > 0);
+  const showMealTimes = filledEntries.length >= 2;
+  const firstMealText = filledEntries[0]?.items || "your first meal/snack";
+  const lastMealText = filledEntries[filledEntries.length - 1]?.items || "your last meal/snack";
 
   const caffeineSources = watch("caffeineSources") || [];
   const waterAdditions = watch("waterAdditions") || [];
@@ -73,7 +107,7 @@ export function FoodDrink({ form }: FoodDrinkProps) {
 
   return (
     <div className="px-6 py-8">
-      <h1 className="text-center text-2xl font-bold text-foreground">Food & drink</h1>
+      <h1 className="text-center text-2xl font-bold text-foreground">Food, drink, supplements</h1>
       <p className="mt-2 text-center text-sm text-muted-foreground">
         Caffeine, hydration, and alcohol patterns.
       </p>
@@ -82,6 +116,86 @@ export function FoodDrink({ form }: FoodDrinkProps) {
       </p>
 
       <div className="mt-8 space-y-8">
+        <div>
+          <Label className="text-sm font-medium">
+            List everything you ate in the last 24 hours
+          </Label>
+          <p className="mt-1 text-xs text-muted-foreground">Don&apos;t worry about portion sizes. Group by meals/snacks.</p>
+          
+          <div className="mt-4 space-y-4">
+            <div className="overflow-x-auto pb-2">
+              <div className="min-w-[600px] space-y-3">
+                <div className="grid grid-cols-[3fr_2fr] gap-3 px-1">
+                  <Label className="text-xs text-muted-foreground">Food/Drink Items</Label>
+                  <Label className="text-xs text-muted-foreground">Location</Label>
+                </div>
+                
+                {fields.map((field, index) => {
+                  return (
+                    <div key={field.id} className="grid grid-cols-[3fr_2fr] gap-3">
+                      <Input 
+                        placeholder={PLACEHOLDERS[index] || "e.g., Apple slices"} 
+                        className="h-12 rounded-xl text-base"
+                        {...register(`foodLog.${index}.items` as const)} 
+                      />
+                      <Input 
+                        placeholder="e.g., home, work" 
+                        className="h-12 rounded-xl text-base"
+                        {...register(`foodLog.${index}.location` as const)} 
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            
+            <button
+              type="button"
+              onClick={() => append({ items: "", mealType: "meal", location: "" })}
+              className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+            >
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                <Plus className="h-4 w-4" />
+              </div>
+              Add a line
+            </button>
+          </div>
+
+          {showMealTimes && (
+            <div className="mt-8 animate-in slide-in-from-top-2 duration-200">
+              <Label className="text-sm font-medium">
+                What time did you have these?
+              </Label>
+              <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-xl border bg-muted/20 p-4">
+                  <Label className="text-xs text-muted-foreground line-clamp-1" title={firstMealText}>
+                    First: {firstMealText}
+                  </Label>
+                  <div className="mt-2">
+                    <TimePicker
+                      value={watch("firstMealTime")}
+                      onChange={(v) => setValue("firstMealTime", v, { shouldDirty: true })}
+                      className="bg-background"
+                    />
+                  </div>
+                </div>
+                <div className="rounded-xl border bg-muted/20 p-4">
+                  <Label className="text-xs text-muted-foreground line-clamp-1" title={lastMealText}>
+                    Last: {lastMealText}
+                  </Label>
+                  <div className="mt-2">
+                    <TimePicker
+                      value={watch("lastMealTime")}
+                      onChange={(v) => setValue("lastMealTime", v, { shouldDirty: true })}
+                      className="bg-background"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
         <div>
           <Label className="text-sm font-medium">
             Any of these caffeine sources in the last 3 days?
@@ -124,13 +238,19 @@ export function FoodDrink({ form }: FoodDrinkProps) {
                 <div>
                   <Label className="text-xs text-muted-foreground">First</Label>
                   <div className="mt-1">
-                    <TimePicker {...register("firstCaffeineTime")} />
+                    <TimePicker
+                      value={watch("firstCaffeineTime")}
+                      onChange={(v) => setValue("firstCaffeineTime", v, { shouldDirty: true })}
+                    />
                   </div>
                 </div>
                 <div>
                   <Label className="text-xs text-muted-foreground">Last</Label>
                   <div className="mt-1">
-                    <TimePicker {...register("lastCaffeineTime")} />
+                    <TimePicker
+                      value={watch("lastCaffeineTime")}
+                      onChange={(v) => setValue("lastCaffeineTime", v, { shouldDirty: true })}
+                    />
                   </div>
                 </div>
               </div>
@@ -207,6 +327,22 @@ export function FoodDrink({ form }: FoodDrinkProps) {
                 {val ? "Yes" : "No"}
               </button>
             ))}
+          </div>
+        </div>
+
+        <div>
+          <Label className="text-sm font-medium">
+            Supplements or medications you take regularly
+          </Label>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Rx, OTC, vitamins, herbs — one per line.
+          </p>
+          <div className="mt-2">
+            <Textarea
+              rows={5}
+              placeholder={"e.g., Magnesium glycinate 400mg\nVitamin D3 5000 IU\nLexapro 10mg"}
+              {...register("supplementsMeds")}
+            />
           </div>
         </div>
       </div>

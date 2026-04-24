@@ -60,6 +60,13 @@ export type WakeupType =
   | "frequent_urination"
   | "other";
 
+export interface FoodLogEntry {
+  items: string;
+  mealType: string;
+  time?: string;
+  location: string;
+}
+
 export interface FormData {
   // Step 1: Basics
   name: string;
@@ -110,6 +117,9 @@ export interface FormData {
   firstSocialWindow?: FirstSocialWindow;
 
   // Step 7: Food & Drink
+  foodLog: FoodLogEntry[];
+  firstMealTime?: string;
+  lastMealTime?: string;
   caffeineSources: string[];
   caffeineSourceOther?: string;
   firstCaffeineTime?: string;
@@ -118,6 +128,7 @@ export interface FormData {
   waterAdditionOther?: string;
   alcoholLast3Days?: boolean;
   alcoholEveningPattern?: boolean;
+  supplementsMeds?: string;
 
   // Step 8: Movement
   exerciseTypes: string[];
@@ -126,9 +137,6 @@ export interface FormData {
   exerciseTiming?: ExerciseTiming;
   exerciseTimingVariance?: Variance;
   exerciseRecoverySymptoms: string[];
-
-  // Step 9: Body Signals
-  supplementsMeds?: string;
 }
 
 export interface SubmissionResponse {

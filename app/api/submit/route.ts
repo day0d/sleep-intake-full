@@ -35,17 +35,18 @@ export async function POST(request: Request) {
 
   const data = result.data;
   const now = new Date();
-  const storage = getStorageAdapter();
-
-  // 1. Create submission folder with clear naming
-  const folderName = buildFolderName(data.name, now);
+  let storage;
   let folderId: string;
+
   try {
+    storage = getStorageAdapter();
+    // 1. Create submission folder with clear naming
+    const folderName = buildFolderName(data.name, now);
     folderId = await storage.createSubmissionFolder(folderName);
-  } catch (err) {
-    console.error("Failed to create submission folder:", err);
+  } catch (err: any) {
+    console.error("Storage initialization or folder creation failed:", err);
     return NextResponse.json(
-      { error: "Failed to create storage folder" },
+      { error: "Failed to initialize storage or create folder", details: err.message },
       { status: 500 }
     );
   }
@@ -60,8 +61,12 @@ export async function POST(request: Request) {
       assessmentFileName,
       markdown
     );
-  } catch (err) {
+  } catch (err: any) {
     console.error("Assessment upload failed:", err);
+    return NextResponse.json(
+      { error: "Assessment upload failed", details: err.message },
+      { status: 500 }
+    );
   }
 
   // 3. Build links for email

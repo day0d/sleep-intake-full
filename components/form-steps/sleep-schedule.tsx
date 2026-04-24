@@ -21,8 +21,12 @@ const SLEEP_AMOUNT_OPTIONS = [
 ];
 
 export function SleepSchedule({ form }: SleepScheduleProps) {
-  const { register, setValue, watch } = form;
+  const { setValue, watch } = form;
 
+  const bedtime = watch("bedtime");
+  const wakeTime = watch("wakeTime");
+  const naturalBedtime = watch("naturalBedtime");
+  const naturalWakeTime = watch("naturalWakeTime");
   const sleepWakeVariance = watch("sleepWakeVariance");
   const sleepAmount = watch("sleepAmount");
   const sleepAmountVariance = watch("sleepAmountVariance");
@@ -41,13 +45,19 @@ export function SleepSchedule({ form }: SleepScheduleProps) {
           <div>
             <Label className="text-sm font-medium">Usual bedtime</Label>
             <div className="mt-1.5">
-              <TimePicker {...register("bedtime")} />
+              <TimePicker
+                value={bedtime}
+                onChange={(v) => setValue("bedtime", v, { shouldDirty: true })}
+              />
             </div>
           </div>
           <div>
             <Label className="text-sm font-medium">Usual wake time</Label>
             <div className="mt-1.5">
-              <TimePicker {...register("wakeTime")} />
+              <TimePicker
+                value={wakeTime}
+                onChange={(v) => setValue("wakeTime", v, { shouldDirty: true })}
+              />
             </div>
           </div>
         </div>
@@ -111,11 +121,17 @@ export function SleepSchedule({ form }: SleepScheduleProps) {
           <div className="mt-3 grid grid-cols-2 gap-3">
             <div>
               <p className="mb-1 text-xs text-muted-foreground">Bedtime</p>
-              <TimePicker {...register("naturalBedtime")} />
+              <TimePicker
+                value={naturalBedtime}
+                onChange={(v) => setValue("naturalBedtime", v, { shouldDirty: true })}
+              />
             </div>
             <div>
               <p className="mb-1 text-xs text-muted-foreground">Wake time</p>
-              <TimePicker {...register("naturalWakeTime")} />
+              <TimePicker
+                value={naturalWakeTime}
+                onChange={(v) => setValue("naturalWakeTime", v, { shouldDirty: true })}
+              />
             </div>
           </div>
         </div>

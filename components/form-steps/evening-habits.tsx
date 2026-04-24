@@ -2,7 +2,7 @@
 
 import { UseFormReturn } from "react-hook-form";
 import { FormData, PmPhoneWindow } from "@/lib/types";
-import { pillStyles } from "@/lib/ui-styles";
+import { cardStyles, pillStyles } from "@/lib/ui-styles";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { PillRow } from "@/components/ui/pill-row";
@@ -20,15 +20,15 @@ const PM_PHONE_OPTIONS: { id: PmPhoneWindow; label: string }[] = [
 ];
 
 const LIGHT_LOCATION = [
-  { id: "ceiling_overhead", label: "Ceiling / Overhead Lights" },
-  { id: "lamps_floor_level", label: "Lamps / Eye- or Floor-Level Lighting" },
+  { id: "ceiling_overhead", label: "Ceiling / Overhead" },
+  { id: "lamps_floor_level", label: "Lamps / Eye-Level" },
 ];
 
 const LIGHT_TONE = [
-  { id: "cool_white", label: "Cool White" },
-  { id: "warm_yellow", label: "Warm Yellow-Toned" },
-  { id: "amber_orange", label: "Amber / Orange-Toned" },
-  { id: "red_toned", label: "Red-Toned" },
+  { id: "cool_white", label: "Cool White", color: "#DCEEFF" },
+  { id: "warm_yellow", label: "Warm Yellow", color: "#FFF3A3" },
+  { id: "amber_orange", label: "Amber / Orange", color: "#FFBC45" },
+  { id: "red_toned", label: "Red-Toned", color: "#FF8080" },
 ];
 
 const LIGHT_INTENSITY = [
@@ -39,8 +39,8 @@ const LIGHT_INTENSITY = [
 ];
 
 const DEVICE_SCREEN = [
-  { id: "bright_daytime", label: "Bright & Clear / Same as daytime tone" },
-  { id: "dim_orange", label: "Changed to Dim / Orange-Toned" },
+  { id: "bright_daytime", label: "Bright / Daytime" },
+  { id: "dim_orange", label: "Dim / Warm-Toned" },
 ];
 
 export function EveningHabits({ form }: EveningHabitsProps) {
@@ -107,7 +107,7 @@ export function EveningHabits({ form }: EveningHabitsProps) {
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 Type of lighting
               </p>
-              <div className="mt-2 flex flex-wrap gap-2">
+              <div className="mt-2 grid grid-cols-2 gap-3">
                 {LIGHT_LOCATION.map((o) => {
                   const selected = eveningLightLocation.includes(o.id);
                   return (
@@ -115,11 +115,30 @@ export function EveningHabits({ form }: EveningHabitsProps) {
                       key={o.id}
                       type="button"
                       onClick={() => toggleMulti("eveningLightLocation", eveningLightLocation, o.id)}
-                      className={`rounded-full border-2 px-4 py-2 text-sm font-medium transition-colors ${
-                        selected ? pillStyles.selected : pillStyles.unselected
+                      className={`flex flex-col items-center gap-2 rounded-2xl border-2 px-3 py-4 text-center transition-colors ${
+                        selected ? cardStyles.selected : cardStyles.unselected
                       }`}
                     >
-                      {o.label}
+                      {o.id === "ceiling_overhead" ? (
+                        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" className="text-foreground">
+                          <line x1="5" y1="6" x2="31" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                          <line x1="18" y1="6" x2="18" y2="13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                          <path d="M13 13 Q13 21 18 23 Q23 21 23 13 Z" stroke="currentColor" strokeWidth="1.5" fill="currentColor" fillOpacity="0.12"/>
+                          <line x1="13" y1="13" x2="23" y2="13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                          <line x1="18" y1="24" x2="18" y2="29" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                          <line x1="14" y1="23" x2="11" y2="27" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                          <line x1="22" y1="23" x2="25" y2="27" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                        </svg>
+                      ) : (
+                        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" className="text-foreground">
+                          <path d="M12 19 L24 19 L21 9 L15 9 Z" stroke="currentColor" strokeWidth="1.5" fill="currentColor" fillOpacity="0.12" strokeLinejoin="round"/>
+                          <line x1="18" y1="19" x2="18" y2="30" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                          <line x1="12" y1="30" x2="24" y2="30" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+                          <line x1="10" y1="14" x2="7" y2="12" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeOpacity="0.6"/>
+                          <line x1="26" y1="14" x2="29" y2="12" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeOpacity="0.6"/>
+                        </svg>
+                      )}
+                      <span className="text-xs font-medium leading-tight">{o.label}</span>
                     </button>
                   );
                 })}
@@ -138,10 +157,14 @@ export function EveningHabits({ form }: EveningHabitsProps) {
                       key={o.id}
                       type="button"
                       onClick={() => toggleMulti("eveningLightTone", eveningLightTone, o.id)}
-                      className={`rounded-full border-2 px-4 py-2 text-sm font-medium transition-colors ${
+                      className={`flex items-center gap-2.5 rounded-full border-2 px-4 py-2 text-sm font-medium transition-colors ${
                         selected ? pillStyles.selected : pillStyles.unselected
                       }`}
                     >
+                      <span
+                        className="h-4 w-4 flex-shrink-0 rounded-full border border-black/10"
+                        style={{ backgroundColor: o.color }}
+                      />
                       {o.label}
                     </button>
                   );
@@ -180,9 +203,9 @@ export function EveningHabits({ form }: EveningHabitsProps) {
 
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Device screens
+                Device screens in evening/nighttime
               </p>
-              <div className="mt-2 flex flex-wrap gap-2">
+              <div className="mt-2 grid grid-cols-2 gap-3">
                 {DEVICE_SCREEN.map((o) => {
                   const selected = eveningDeviceScreen.includes(o.id);
                   return (
@@ -190,11 +213,21 @@ export function EveningHabits({ form }: EveningHabitsProps) {
                       key={o.id}
                       type="button"
                       onClick={() => toggleMulti("eveningDeviceScreen", eveningDeviceScreen, o.id)}
-                      className={`rounded-full border-2 px-4 py-2 text-sm font-medium transition-colors ${
-                        selected ? pillStyles.selected : pillStyles.unselected
+                      className={`flex flex-col items-center gap-2 rounded-2xl border-2 px-3 py-4 text-center transition-colors ${
+                        selected ? cardStyles.selected : cardStyles.unselected
                       }`}
                     >
-                      {o.label}
+                      <svg width="40" height="30" viewBox="0 0 40 30" fill="none" className="text-foreground">
+                        <rect x="2" y="2" width="36" height="22" rx="2" stroke="currentColor" strokeWidth="1.5"/>
+                        <rect
+                          x="4" y="4" width="32" height="18" rx="1"
+                          fill={o.id === "dim_orange" ? "#FF8C00" : "currentColor"}
+                          fillOpacity={o.id === "dim_orange" ? "0.45" : "0.15"}
+                        />
+                        <line x1="20" y1="24" x2="20" y2="28" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                        <line x1="14" y1="28" x2="26" y2="28" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                      </svg>
+                      <span className="text-xs font-medium leading-tight">{o.label}</span>
                     </button>
                   );
                 })}

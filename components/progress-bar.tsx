@@ -2,6 +2,7 @@ interface ProgressBarProps {
   currentStep: number;
   totalSteps: number;
   sectionName: string;
+  hideCount?: boolean;
 }
 
 const SECTION_NAMES = [
@@ -11,9 +12,8 @@ const SECTION_NAMES = [
   "Your Bedroom",
   "Evening Habits",
   "Morning Habits",
-  "Food & Drink",
+  "Food, Drink, Supplements",
   "Movement",
-  "Body Signals",
   "Book a Call",
 ];
 
@@ -21,13 +21,16 @@ export function ProgressBar({
   currentStep,
   totalSteps,
   sectionName,
+  hideCount = false,
 }: ProgressBarProps) {
   return (
     <div className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-1.5">
       <span className="text-xs font-medium text-background">{sectionName}</span>
-      <span className="text-xs text-background/60">
-        {currentStep} of {totalSteps}
-      </span>
+      {!hideCount && (
+        <span className="text-xs text-background/60">
+          {currentStep} of {totalSteps}
+        </span>
+      )}
     </div>
   );
 }

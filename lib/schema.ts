@@ -93,6 +93,18 @@ export const morningHabitsSchema = z.object({
 
 // Step 7 — Food & Drink
 export const foodDrinkSchema = z.object({
+  foodLog: z
+    .array(
+      z.object({
+        items: z.string().default(""),
+        mealType: z.string().default(""),
+        time: z.string().optional(),
+        location: z.string().default(""),
+      })
+    )
+    .default([]),
+  firstMealTime: z.string().optional(),
+  lastMealTime: z.string().optional(),
   caffeineSources: z.array(z.string()).default([]),
   caffeineSourceOther: z.string().optional(),
   firstCaffeineTime: z.string().optional(),
@@ -101,6 +113,7 @@ export const foodDrinkSchema = z.object({
   waterAdditionOther: z.string().optional(),
   alcoholLast3Days: z.boolean().optional(),
   alcoholEveningPattern: z.boolean().optional(),
+  supplementsMeds: z.string().optional(),
 });
 
 // Step 8 — Movement
@@ -115,11 +128,6 @@ export const movementSchema = z.object({
   exerciseRecoverySymptoms: z.array(z.string()).default([]),
 });
 
-// Step 9 — Body Signals
-export const bodySignalsSchema = z.object({
-  supplementsMeds: z.string().optional(),
-});
-
 export const fullFormSchema = basicsSchema
   .merge(sleepScheduleSchema)
   .merge(sleepQualitySchema)
@@ -127,7 +135,6 @@ export const fullFormSchema = basicsSchema
   .merge(eveningHabitsSchema)
   .merge(morningHabitsSchema)
   .merge(foodDrinkSchema)
-  .merge(movementSchema)
-  .merge(bodySignalsSchema);
+  .merge(movementSchema);
 
 export type FullFormData = z.infer<typeof fullFormSchema>;

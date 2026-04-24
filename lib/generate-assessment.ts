@@ -81,13 +81,29 @@ ${noiseFreqLines}${data.noiseOther ? `\n  - other: "${data.noiseOther}"` : ""}
 - First screen use: ${data.amPhoneWindow ?? "Not answered"}
 - First social interaction: ${data.firstSocialWindow ?? "Not answered"}
 
-## Food & Drink
+## Food, Drink, & Supplements
+### Food Log
+${
+  data.foodLog && data.foodLog.length > 0
+    ? data.foodLog
+        .map(
+          (log) =>
+            `- ${log.time || "No time"}: ${log.items || "No items"} (${log.mealType || "No type"})${log.location ? ` at ${log.location}` : ""}`
+        )
+        .join("\n")
+    : "None provided"
+}
+
+- First meal time: ${data.firstMealTime ?? "Not answered"}
+- Last meal time: ${data.lastMealTime ?? "Not answered"}
 - Caffeine sources (last 3 days): ${fmtList(data.caffeineSources)}${data.caffeineSourceOther ? ` — other: "${data.caffeineSourceOther}"` : ""}
 - First caffeine (most recent day): ${data.firstCaffeineTime ?? "N/A"}
 - Last caffeine (most recent day): ${data.lastCaffeineTime ?? "N/A"}
 - Water additions: ${fmtList(data.waterAdditions)}${data.waterAdditionOther ? ` — other: "${data.waterAdditionOther}"` : ""}
 - Alcohol in last 3 days: ${fmtBool(data.alcoholLast3Days)}
 - Evening alcohol pattern (last 1–2 weeks): ${fmtBool(data.alcoholEveningPattern)}
+- Supplements / medications:
+${data.supplementsMeds ? data.supplementsMeds.split("\n").map((l) => `  - ${l.trim()}`).filter((l) => l !== "  -").join("\n") : "  None listed"}
 
 ## Movement
 - Exercise types: ${fmtList(data.exerciseTypes)}
@@ -96,9 +112,5 @@ ${noiseFreqLines}${data.noiseOther ? `\n  - other: "${data.noiseOther}"` : ""}
 - Usual timing: ${data.exerciseTiming ?? "Not answered"}
 - Timing consistency: ${data.exerciseTimingVariance ?? "Not answered"}
 - Recovery symptoms: ${fmtList(data.exerciseRecoverySymptoms)}
-
-## Body Signals
-- Supplements / medications:
-${data.supplementsMeds ? data.supplementsMeds.split("\n").map((l) => `  - ${l.trim()}`).filter((l) => l !== "  -").join("\n") : "  None listed"}
 `;
 }
