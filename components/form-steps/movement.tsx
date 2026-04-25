@@ -55,7 +55,7 @@ export function Movement({ form }: MovementProps) {
   const exerciseTypes = watch("exerciseTypes") || [];
   const exerciseFrequency = watch("exerciseFrequency");
   const exerciseFrequencyVariance = watch("exerciseFrequencyVariance");
-  const exerciseTiming = watch("exerciseTiming");
+  const exerciseTiming = watch("exerciseTiming") || [];
   const exerciseTimingVariance = watch("exerciseTimingVariance");
   const exerciseRecoverySymptoms = watch("exerciseRecoverySymptoms") || [];
 
@@ -64,6 +64,13 @@ export function Movement({ form }: MovementProps) {
       ? exerciseTypes.filter((t) => t !== id)
       : [...exerciseTypes, id];
     setValue("exerciseTypes", next, { shouldDirty: true });
+  }
+
+  function toggleTiming(id: ExerciseTiming) {
+    const next = exerciseTiming.includes(id)
+      ? exerciseTiming.filter((t) => t !== id)
+      : [...exerciseTiming, id];
+    setValue("exerciseTiming", next, { shouldDirty: true });
   }
 
   function toggleRecovery(id: string) {
@@ -134,16 +141,23 @@ export function Movement({ form }: MovementProps) {
 
         <div>
           <Label className="text-sm font-medium">When do you usually exercise?</Label>
-          <div className="mt-3">
-            <PillRow
-              options={TIMING_OPTIONS}
-              value={exerciseTiming}
-              onChange={(v) =>
-                setValue("exerciseTiming", v as ExerciseTiming | undefined, {
-                  shouldDirty: true,
-                })
-              }
-            />
+          <p className="mt-1 text-xs text-muted-foreground">Select all that apply.</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {TIMING_OPTIONS.map((t) => {
+              const selected = exerciseTiming.includes(t.id);
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => toggleTiming(t.id)}
+                  className={`rounded-full border-2 px-4 py-2 text-sm font-medium transition-colors ${
+                    selected ? pillStyles.selected : pillStyles.unselected
+                  }`}
+                >
+                  {t.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 

@@ -34,6 +34,7 @@ const LYING_AWAKE_OPTIONS = [
   { id: "body_on_mind_tired", label: "Physically activated, but mentally fatigued" },
   { id: "mind_on_body_tired", label: "Mentally alert, but physically tired" },
   { id: "both_on", label: "Both physically and mentally alert" },
+  { id: "both_tired", label: "Both physically and mentally tired" },
 ];
 
 export function SleepQuality({ form }: SleepQualityProps) {

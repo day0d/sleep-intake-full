@@ -1,7 +1,7 @@
 "use client";
 
 import { UseFormReturn } from "react-hook-form";
-import { FormData, AmSunExposure, AmPhoneWindow, FirstSocialWindow, Variance } from "@/lib/types";
+import { FormData, AmSunExposure, AmSunDuration, AmPhoneWindow, FirstSocialWindow, Variance } from "@/lib/types";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { PillRow } from "@/components/ui/pill-row";
@@ -18,6 +18,14 @@ const SUN_EXPOSURE_OPTIONS: { id: AmSunExposure; label: string }[] = [
   { id: "30-60m", label: "30–60m" },
   { id: "1-2h", label: "1–2h" },
   { id: "later", label: "Later in day" },
+];
+
+const SUN_DURATION_OPTIONS: { id: AmSunDuration; label: string }[] = [
+  { id: "<2m", label: "<2m" },
+  { id: "3-5m", label: "3–5m" },
+  { id: "5-10m", label: "5–10m" },
+  { id: "10-15m", label: "10–15m" },
+  { id: "15+m", label: "15+m" },
 ];
 
 const AM_PHONE_OPTIONS: { id: AmPhoneWindow; label: string }[] = [
@@ -42,6 +50,7 @@ export function MorningHabits({ form }: MorningHabitsProps) {
   const { register, setValue, watch } = form;
 
   const amSunExposure = watch("amSunExposure");
+  const amSunDuration = watch("amSunDuration");
   const amSunVariance = watch("amSunVariance");
   const amPhoneWindow = watch("amPhoneWindow");
   const firstSocialWindow = watch("firstSocialWindow");
@@ -81,17 +90,32 @@ export function MorningHabits({ form }: MorningHabitsProps) {
           </div>
 
           {hasSunlight && (
-            <div className="mt-4 animate-in slide-in-from-top-2 duration-200">
-              <Label className="text-sm font-medium">How consistent is that timing?</Label>
-              <div className="mt-3">
-                <VariancePills
-                  value={amSunVariance}
-                  onChange={(v) =>
-                    setValue("amSunVariance", v as Variance | undefined, { shouldDirty: true })
-                  }
-                />
+            <>
+              <div className="mt-4 animate-in slide-in-from-top-2 duration-200">
+                <Label className="text-sm font-medium">How long do you get that direct sunlight?</Label>
+                <div className="mt-3">
+                  <PillRow
+                    options={SUN_DURATION_OPTIONS}
+                    value={amSunDuration}
+                    onChange={(v) =>
+                      setValue("amSunDuration", v as AmSunDuration | undefined, { shouldDirty: true })
+                    }
+                  />
+                </div>
               </div>
-            </div>
+
+              <div className="mt-4 animate-in slide-in-from-top-2 duration-200">
+                <Label className="text-sm font-medium">How consistent is that timing?</Label>
+                <div className="mt-3">
+                  <VariancePills
+                    value={amSunVariance}
+                    onChange={(v) =>
+                      setValue("amSunVariance", v as Variance | undefined, { shouldDirty: true })
+                    }
+                  />
+                </div>
+              </div>
+            </>
           )}
         </div>
 
@@ -112,9 +136,11 @@ export function MorningHabits({ form }: MorningHabitsProps) {
 
         <div>
           <Label className="text-sm font-medium">
-            When do you have your first social interaction?
+            How soon after waking do you have your first non-trivial social interaction of the day?
           </Label>
-          <p className="mt-1 text-xs text-muted-foreground">Time after waking.</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Trivial examples: interacting with strangers, retail workers, AI, etc.
+          </p>
           <div className="mt-3">
             <PillRow
               options={SOCIAL_OPTIONS}

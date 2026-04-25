@@ -156,7 +156,7 @@ export function Bedroom({ form }: BedroomProps) {
   const sharesBed = watch("sharesBedWithPartner");
   const sharesBlanket = watch("sharesBlanketWithPartner");
   const hasBlueLight = itemsOwned.includes("Blue-light blocking glasses");
-  const selectedTint = watch("blueLightGlassesColor");
+  const selectedTints = watch("blueLightGlassesColor") || [];
   const nighttimeTemp = watch("nighttimeTemp");
   const curtainTypes = watch("curtainTypes") || [];
   const curtainOpacity = watch("curtainOpacity");
@@ -172,8 +172,15 @@ export function Bedroom({ form }: BedroomProps) {
       : [...itemsOwned, item];
     setValue("itemsOwned", next, { shouldDirty: true });
     if (item === "Blue-light blocking glasses" && itemsOwned.includes(item)) {
-      setValue("blueLightGlassesColor", undefined, { shouldDirty: true });
+      setValue("blueLightGlassesColor", [], { shouldDirty: true });
     }
+  }
+
+  function toggleTint(id: string) {
+    const next = selectedTints.includes(id)
+      ? selectedTints.filter((t) => t !== id)
+      : [...selectedTints, id];
+    setValue("blueLightGlassesColor", next, { shouldDirty: true });
   }
 
   function togglePhone(val: boolean) {
@@ -281,19 +288,16 @@ export function Bedroom({ form }: BedroomProps) {
 
           {hasBlueLight && (
             <div className="mt-3 animate-in slide-in-from-top-2 duration-200">
-              <Label className="mb-2 text-sm font-medium">What tint are your lenses?</Label>
+              <Label className="mb-1 text-sm font-medium">What tint are your lenses?</Label>
+              <p className="mb-2 text-xs text-muted-foreground">Select all that apply.</p>
               <div className="grid grid-cols-2 gap-3">
                 {TINT_OPTIONS.map((tint) => {
-                  const selected = selectedTint === tint.id;
+                  const selected = selectedTints.includes(tint.id);
                   return (
                     <button
                       key={tint.id}
                       type="button"
-                      onClick={() =>
-                        setValue("blueLightGlassesColor", selected ? undefined : tint.id, {
-                          shouldDirty: true,
-                        })
-                      }
+                      onClick={() => toggleTint(tint.id)}
                       className={`flex flex-col items-center gap-2 rounded-2xl border-2 px-3 py-4 text-center transition-colors ${
                         selected ? cardStyles.selected : cardStyles.unselected
                       }`}

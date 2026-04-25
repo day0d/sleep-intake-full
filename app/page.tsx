@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Loader2 } from "lucide-react";
 
 import { FormData } from "@/lib/types";
 import { basicsSchema, fullFormSchema } from "@/lib/schema";
@@ -31,7 +30,6 @@ export default function IntakeForm() {
   const [submissionId] = useState(() => generateSubmissionId());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const router = useRouter();
 
   const form = useForm<FormData>({
     defaultValues: {
@@ -41,6 +39,7 @@ export default function IntakeForm() {
       wakeupTypology: [],
       lyingAwakeState: [],
       itemsOwned: [],
+      blueLightGlassesColor: [],
       bedroomOtherUses: "",
       curtainTypes: [],
       noiseSources: [],
@@ -51,6 +50,7 @@ export default function IntakeForm() {
       caffeineSources: [],
       waterAdditions: [],
       exerciseTypes: [],
+      exerciseTiming: [],
       exerciseRecoverySymptoms: [],
     },
   });
@@ -89,7 +89,10 @@ export default function IntakeForm() {
     }
   }
 
-  async function handleSubmit() {
+  // Called when user clicks "Get report & book session" on the last survey step.
+  // Submits the form data (triggers assessment generation + email), then
+  // navigates to the booking/calendar step.
+  async function handleSubmitAndProceed() {
     setSubmitError(null);
 
     const values = form.getValues();
@@ -116,7 +119,8 @@ export default function IntakeForm() {
         throw new Error(err.error || "Submission failed");
       }
 
-      router.push(`/confirmation?name=${encodeURIComponent(values.name)}`);
+      setStep(step + 1);
+      window.scrollTo(0, 0);
     } catch (err) {
       setSubmitError(
         err instanceof Error
@@ -130,12 +134,13 @@ export default function IntakeForm() {
 
   const calendarUrl = process.env.NEXT_PUBLIC_NOTION_CALENDAR_URL || "";
   const isBookingStep = step === TOTAL_STEPS - 1;
+  const isLastSurveyStep = step === TOTAL_STEPS - 2;
 
   return (
     <main className="min-h-screen bg-background">
       {/* Top navigation bar */}
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-background px-4 py-3 shadow-sm">
-        {isBookingStep ? (
+        {step > 0 ? (
           <button
             type="button"
             onClick={handleBack}
@@ -171,16 +176,13 @@ export default function IntakeForm() {
           {step === 8 && (
             <Booking
               calendarUrl={calendarUrl}
-              isSubmitting={isSubmitting}
-              onSubmit={handleSubmit}
               name={form.getValues("name")}
-              email={form.getValues("email")}
             />
           )}
         </div>
       </div>
 
-      {/* Bottom navigation bar */}
+      {/* Bottom navigation bar — hidden on booking step */}
       {!isBookingStep && (
         <div className="sticky bottom-0 z-10 border-t border-border bg-card px-4 py-4 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
           <div className="mx-auto flex max-w-lg items-center justify-between">
@@ -195,13 +197,22 @@ export default function IntakeForm() {
             ) : (
               <div />
             )}
-            {step === TOTAL_STEPS - 2 ? (
+
+            {isLastSurveyStep ? (
               <button
                 type="button"
-                onClick={handleNext}
-                className="rounded-full border-2 border-red-500 bg-red-500 px-8 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-600 hover:border-red-600"
+                onClick={handleSubmitAndProceed}
+                disabled={isSubmitting}
+                className="flex items-center gap-2 rounded-full border-2 border-red-500 bg-red-500 px-8 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-600 hover:border-red-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Get report & book session
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Get report & book session"
+                )}
               </button>
             ) : (
               <button

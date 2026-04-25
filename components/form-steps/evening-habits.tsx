@@ -100,9 +100,11 @@ export function EveningHabits({ form }: EveningHabitsProps) {
           <Label className="text-sm font-medium">
             Evening lighting environment (especially 2 hrs before bed)
           </Label>
-          <p className="mt-1 text-xs text-muted-foreground">Select all that apply in each category.</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Check all features below that describe the lights you typically use in the evening.
+          </p>
 
-          <div className="mt-4 space-y-5">
+          <div className="mt-4 rounded-2xl border border-border bg-muted/20 p-4 space-y-5">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 Type of lighting

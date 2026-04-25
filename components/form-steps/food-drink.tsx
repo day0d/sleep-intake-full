@@ -58,12 +58,6 @@ export function FoodDrink({ form }: FoodDrinkProps) {
     }
   }, [fields.length, append]);
 
-  const foodLog = watch("foodLog") || [];
-  const filledEntries = foodLog.filter(entry => entry.items && entry.items.trim().length > 0);
-  const showMealTimes = filledEntries.length >= 2;
-  const firstMealText = filledEntries[0]?.items || "your first meal/snack";
-  const lastMealText = filledEntries[filledEntries.length - 1]?.items || "your last meal/snack";
-
   const caffeineSources = watch("caffeineSources") || [];
   const waterAdditions = watch("waterAdditions") || [];
   const alcoholLast3Days = watch("alcoholLast3Days");
@@ -161,39 +155,36 @@ export function FoodDrink({ form }: FoodDrinkProps) {
             </button>
           </div>
 
-          {showMealTimes && (
-            <div className="mt-8 animate-in slide-in-from-top-2 duration-200">
-              <Label className="text-sm font-medium">
-                What time did you have these?
-              </Label>
-              <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="rounded-xl border bg-muted/20 p-4">
-                  <Label className="text-xs text-muted-foreground line-clamp-1" title={firstMealText}>
-                    First: {firstMealText}
-                  </Label>
-                  <div className="mt-2">
-                    <TimePicker
-                      value={watch("firstMealTime")}
-                      onChange={(v) => setValue("firstMealTime", v, { shouldDirty: true })}
-                      className="bg-background"
-                    />
-                  </div>
+          <div className="mt-8">
+            <Label className="text-sm font-medium">
+              What time was your first and last meal or snack yesterday?
+            </Label>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Think about everything you ate or drank (besides water) from when you woke up to when you went to sleep yesterday.
+            </p>
+            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="rounded-xl border bg-muted/20 p-4">
+                <Label className="text-xs text-muted-foreground">First meal / snack</Label>
+                <div className="mt-2">
+                  <TimePicker
+                    value={watch("firstMealTime")}
+                    onChange={(v) => setValue("firstMealTime", v, { shouldDirty: true })}
+                    className="bg-background"
+                  />
                 </div>
-                <div className="rounded-xl border bg-muted/20 p-4">
-                  <Label className="text-xs text-muted-foreground line-clamp-1" title={lastMealText}>
-                    Last: {lastMealText}
-                  </Label>
-                  <div className="mt-2">
-                    <TimePicker
-                      value={watch("lastMealTime")}
-                      onChange={(v) => setValue("lastMealTime", v, { shouldDirty: true })}
-                      className="bg-background"
-                    />
-                  </div>
+              </div>
+              <div className="rounded-xl border bg-muted/20 p-4">
+                <Label className="text-xs text-muted-foreground">Last meal / snack</Label>
+                <div className="mt-2">
+                  <TimePicker
+                    value={watch("lastMealTime")}
+                    onChange={(v) => setValue("lastMealTime", v, { shouldDirty: true })}
+                    className="bg-background"
+                  />
                 </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
 
         <div>

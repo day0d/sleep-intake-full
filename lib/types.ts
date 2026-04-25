@@ -28,6 +28,7 @@ export type NoiseFrequency = "rarely" | "sometimes" | "often";
 export type PmPhoneWindow = "in_bed" | "30m" | "1h" | "2h+" | "not_sure";
 
 export type AmSunExposure = "none" | "<15m" | "15-30m" | "30-60m" | "1-2h" | "later";
+export type AmSunDuration = "<2m" | "3-5m" | "5-10m" | "10-15m" | "15+m";
 
 export type AmPhoneWindow =
   | "in_bed"
@@ -90,7 +91,7 @@ export interface FormData {
   // Step 4: Your Bedroom
   phoneBroughtToRoom?: boolean;
   itemsOwned: string[];
-  blueLightGlassesColor?: string;
+  blueLightGlassesColor: string[];
   sharesBedWithPartner?: boolean;
   sharesBlanketWithPartner?: boolean;
   bedroomOtherUses: string;
@@ -112,6 +113,7 @@ export interface FormData {
   // Step 6: Morning Habits
   amRoutine?: string;
   amSunExposure?: AmSunExposure;
+  amSunDuration?: AmSunDuration;
   amSunVariance?: Variance;
   amPhoneWindow?: AmPhoneWindow;
   firstSocialWindow?: FirstSocialWindow;
@@ -134,7 +136,7 @@ export interface FormData {
   exerciseTypes: string[];
   exerciseFrequency?: ExerciseFrequency;
   exerciseFrequencyVariance?: Variance;
-  exerciseTiming?: ExerciseTiming;
+  exerciseTiming: ExerciseTiming[];
   exerciseTimingVariance?: Variance;
   exerciseRecoverySymptoms: string[];
 }

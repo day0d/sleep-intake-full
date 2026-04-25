@@ -46,7 +46,7 @@ export const sleepQualitySchema = z.object({
 export const bedroomSchema = z.object({
   phoneBroughtToRoom: z.boolean().optional(),
   itemsOwned: z.array(z.string()).default([]),
-  blueLightGlassesColor: z.string().optional(),
+  blueLightGlassesColor: z.array(z.string()).default([]),
   sharesBedWithPartner: z.boolean().optional(),
   sharesBlanketWithPartner: z.boolean().optional(),
   bedroomOtherUses: z.string().optional(),
@@ -81,6 +81,9 @@ export const morningHabitsSchema = z.object({
   amRoutine: z.string().optional(),
   amSunExposure: z
     .enum(["none", "<15m", "15-30m", "30-60m", "1-2h", "later"])
+    .optional(),
+  amSunDuration: z
+    .enum(["<2m", "3-5m", "5-10m", "10-15m", "15+m"])
     .optional(),
   amSunVariance: variance.optional(),
   amPhoneWindow: z
@@ -122,8 +125,8 @@ export const movementSchema = z.object({
   exerciseFrequency: z.enum(["0", "1-2", "3-4", "5-6", "7"]).optional(),
   exerciseFrequencyVariance: variance.optional(),
   exerciseTiming: z
-    .enum(["morning", "midday", "late_afternoon", "evening", "varies"])
-    .optional(),
+    .array(z.enum(["morning", "midday", "late_afternoon", "evening", "varies"]))
+    .default([]),
   exerciseTimingVariance: variance.optional(),
   exerciseRecoverySymptoms: z.array(z.string()).default([]),
 });
