@@ -38,10 +38,14 @@ export function slugifyName(name: string): string {
     .replace(/\s+/g, "-");
 }
 
-/** Build the submission folder name: "2026-04-18 - John Doe - Sleep Intake" */
+/** Build the submission folder name: "2026-04-18 - John Doe - Sleep Intake - 1745612345678"
+ *  The trailing timestamp (ms epoch) guarantees uniqueness even if the same
+ *  name is submitted more than once on the same day.
+ */
 export function buildFolderName(name: string, date: Date): string {
   const dateStr = date.toISOString().split("T")[0];
-  return `${dateStr} - ${name.trim()} - Sleep Intake`;
+  const uid = date.getTime();
+  return `${dateStr} - ${name.trim()} - Sleep Intake - ${uid}`;
 }
 
 /** Build a photo file name: "John-Doe_bed.jpg" */
@@ -50,9 +54,10 @@ export function buildPhotoFileName(name: string, photoKey: string): string {
   return `${slug}_${photoKey}.jpg`;
 }
 
-/** Build the assessment file name: "John-Doe_sleep-intake_2026-04-18.md" */
+/** Build the assessment file name: "John-Doe_sleep-intake-results_2026-04-18_1745612345678.md" */
 export function buildAssessmentFileName(name: string, date: Date): string {
   const slug = slugifyName(name);
   const dateStr = date.toISOString().split("T")[0];
-  return `${slug}_sleep-intake_${dateStr}.md`;
+  const uid = date.getTime();
+  return `${slug}_sleep-intake-results_${dateStr}_${uid}.md`;
 }
