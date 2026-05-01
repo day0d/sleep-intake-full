@@ -238,3 +238,8 @@ export default function IntakeForm() {
         </div>
       )}
     </main>
+  );
+}
+
+  );
+}
