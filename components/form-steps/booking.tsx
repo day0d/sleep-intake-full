@@ -13,12 +13,12 @@ export function Booking({ calendarUrl, name }: BookingProps) {
           {name ? `One last step, ${name.split(" ")[0]}!` : "One last step!"}
         </h1>
         <p className="text-base text-foreground/80 font-medium">
-          Book your free sleep strategy call to receive your personalized sleep report.
+          Book your Sleep Strategy Session below.
         </p>
         <p className="text-sm text-muted-foreground">
-          We&apos;ll send your report before the call so you can look it over — then we&apos;ll
-          walk through it together, dig deeper into what&apos;s driving your sleep issues, and
-          build a personalized plan to actually fix them.
+          We&apos;ll use your intake to go deep — uncovering what&apos;s driving your sleep issues
+          and building a personalized plan with supplements, behavioral protocols, and sleep
+          environment redesign.
         </p>
       </div>
 

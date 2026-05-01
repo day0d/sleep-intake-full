@@ -8,11 +8,7 @@ import {
   CoveringOpacity,
   NoiseSource,
   NoiseFrequency,
-  BedFirmness,
   BedSize,
-  MattressType,
-  FrameSupport,
-  SheetType,
 } from "@/lib/types";
 import { cardStyles, pillStyles } from "@/lib/ui-styles";
 import { Input } from "@/components/ui/input";
@@ -105,6 +101,8 @@ const ITEMS = [
   { id: "Weighted blanket", emoji: "🛏️" },
   { id: "Temperature-regulating bed", emoji: "🌡️" },
   { id: "Blue-light blocking glasses", emoji: "🕶️" },
+  { id: "High quality bedsheets", emoji: "🧵" },
+  { id: "Other Sleep Tech", emoji: "⚙️" },
 ];
 
 const TINT_OPTIONS = [
@@ -208,6 +206,7 @@ export function Bedroom({ form }: BedroomProps) {
   const bedSharers = watch("bedSharers") || [];
   const sharesBlanket = watch("sharesBlanketWithPartner");
   const hasBlueLight = itemsOwned.includes("Blue-light blocking glasses");
+  const hasOtherSleepTech = itemsOwned.includes("Other Sleep Tech");
   const selectedTints = watch("blueLightGlassesColor") || [];
   const nighttimeTemp = watch("nighttimeTemp");
   const curtainTypes = watch("curtainTypes") || [];
@@ -215,12 +214,8 @@ export function Bedroom({ form }: BedroomProps) {
   const noiseSources = watch("noiseSources") || [];
   const noiseFrequency = watch("noiseFrequency") || {};
   const hasNoiseOther = noiseSources.includes("other");
-  const bedFirmness = watch("bedFirmness");
   const hasMattressSag = watch("hasMattressSag");
   const bedSize = watch("bedSize");
-  const mattressType = watch("mattressType");
-  const frameSupport = watch("frameSupport");
-  const sheetType = watch("sheetType");
 
   const hasCoverings =
     curtainTypes.length > 0 &&
@@ -409,6 +404,17 @@ export function Bedroom({ form }: BedroomProps) {
                   );
                 })}
               </div>
+            </div>
+          )}
+
+          {hasOtherSleepTech && (
+            <div className="mt-3 animate-in slide-in-from-top-2 duration-200">
+              <Label className="text-sm font-medium">What other sleep tech do you use?</Label>
+              <Input
+                placeholder="e.g., Oura Ring, Dreem headband, CPAP…"
+                className="mt-1.5 h-12 rounded-xl text-base"
+                {...register("otherSleepTechDetails")}
+              />
             </div>
           )}
         </div>
@@ -625,34 +631,8 @@ export function Bedroom({ form }: BedroomProps) {
           <div>
             <h2 className="text-base font-semibold text-foreground">Your bed</h2>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              Details about your mattress and frame.
+              Size and your relationship with it.
             </p>
-          </div>
-
-          <div>
-            <Label className="text-sm font-medium">How would you describe the feel of your mattress?</Label>
-            <div className="mt-3 grid grid-cols-2 gap-3">
-              {BED_FIRMNESS_OPTIONS.map((opt) => {
-                const selected = bedFirmness === opt.id;
-                return (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    onClick={() =>
-                      setValue("bedFirmness", selected ? undefined : (opt.id as BedFirmness), {
-                        shouldDirty: true,
-                      })
-                    }
-                    className={`rounded-2xl border-2 px-4 py-3 text-left transition-colors ${
-                      selected ? cardStyles.selected : cardStyles.unselected
-                    }`}
-                  >
-                    <p className="text-sm font-medium">{opt.label}</p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">{opt.sub}</p>
-                  </button>
-                );
-              })}
-            </div>
           </div>
 
           <div>
@@ -693,66 +673,14 @@ export function Bedroom({ form }: BedroomProps) {
           </div>
 
           <div>
-            <Label className="text-sm font-medium">Mattress type</Label>
-            <div className="mt-3 grid grid-cols-2 gap-3">
-              {MATTRESS_TYPE_OPTIONS.map((opt) => {
-                const selected = mattressType === opt.id;
-                return (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    onClick={() =>
-                      setValue("mattressType", selected ? undefined : (opt.id as MattressType), {
-                        shouldDirty: true,
-                      })
-                    }
-                    className={`rounded-2xl border-2 px-4 py-3 text-left transition-colors ${
-                      selected ? cardStyles.selected : cardStyles.unselected
-                    }`}
-                  >
-                    <p className="text-sm font-medium">{opt.label}</p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">{opt.sub}</p>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div>
-            <Label className="text-sm font-medium">Frame / foundation</Label>
-            <div className="mt-3">
-              <PillRow
-                options={FRAME_SUPPORT_OPTIONS}
-                value={frameSupport}
-                onChange={(v) =>
-                  setValue("frameSupport", v as FrameSupport | undefined, { shouldDirty: true })
-                }
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label className="text-sm font-medium">Bed associations</Label>
+            <Label className="text-sm font-medium">Your emotional associations with your bed</Label>
             <p className="mt-1 text-xs text-muted-foreground">
-              Is your bed used for things other than sleep and sex?
+              When you get into bed, what emotions or thoughts instinctively come to mind? Don&apos;t overthink it — go with your gut reaction.
             </p>
             <div className="mt-1.5">
               <Textarea
-                placeholder="e.g., I work from bed, watch TV, eat meals…"
+                placeholder="e.g., dread, relief, anxiety, restlessness, safety, frustration…"
                 {...register("bedAssociations")}
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label className="text-sm font-medium">Sheet / bedding material</Label>
-            <div className="mt-3">
-              <PillRow
-                options={SHEET_TYPE_OPTIONS}
-                value={sheetType}
-                onChange={(v) =>
-                  setValue("sheetType", v as SheetType | undefined, { shouldDirty: true })
-                }
               />
             </div>
           </div>

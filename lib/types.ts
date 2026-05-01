@@ -85,6 +85,8 @@ export interface FormData {
   // Step 1: Basics
   name: string;
   email: string;
+  openToCoaching?: boolean;
+  sleepMotivation?: string;
 
   // Step 2: Sleep Schedule
   bedtime?: string;
@@ -128,6 +130,7 @@ export interface FormData {
   frameSupport?: FrameSupport;
   bedAssociations?: string;
   sheetType?: SheetType;
+  otherSleepTechDetails?: string;
 
   // Step 5: Evening Habits
   pmRoutine?: string;

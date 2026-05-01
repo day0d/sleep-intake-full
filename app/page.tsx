@@ -216,7 +216,7 @@ export default function IntakeForm() {
                     Submitting...
                   </>
                 ) : (
-                  "Get report & book session"
+                  "Book Your Sleep Strategy Session"
                 )}
               </button>
             ) : (
@@ -238,5 +238,3 @@ export default function IntakeForm() {
         </div>
       )}
     </main>
-  );
-}

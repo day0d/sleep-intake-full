@@ -255,7 +255,7 @@ export function EveningHabits({ form }: EveningHabitsProps) {
             {/* Type of lighting */}
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Type of lighting
+                Type of Evening Lighting
               </p>
               <div className="mt-2 grid grid-cols-2 gap-3">
                 {LIGHT_LOCATION.map((o) => {
@@ -298,7 +298,7 @@ export function EveningHabits({ form }: EveningHabitsProps) {
             {/* Tone */}
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Tone
+                Tone of Evening Lighting
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {LIGHT_TONE.map((o) => {
@@ -326,7 +326,7 @@ export function EveningHabits({ form }: EveningHabitsProps) {
             {/* Intensity */}
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Intensity
+                Intensity of Evening Lighting
               </p>
               <div className="mt-2 space-y-2">
                 {LIGHT_INTENSITY.map((o) => {
