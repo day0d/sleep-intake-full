@@ -150,40 +150,12 @@ const NOISE_FREQ_OPTIONS: { id: NoiseFrequency; label: string }[] = [
   { id: "often", label: "Often" },
 ];
 
-const BED_FIRMNESS_OPTIONS: { id: BedFirmness; label: string; sub: string }[] = [
-  { id: "bouncy", label: "Bouncy", sub: "Springs back quickly, some push-back" },
-  { id: "buoyant", label: "Buoyant", sub: "Floating feeling, gentle support" },
-  { id: "contouring", label: "Contouring", sub: "Molds around your body, hugging feel" },
-  { id: "firm", label: "Firm", sub: "Minimal give, solid surface" },
-];
-
 const BED_SIZE_OPTIONS: { id: BedSize; label: string }[] = [
   { id: "twin", label: "Twin" },
   { id: "full", label: "Full" },
   { id: "queen", label: "Queen" },
   { id: "king", label: "King" },
   { id: "cali_king", label: "Cal King" },
-];
-
-const MATTRESS_TYPE_OPTIONS: { id: MattressType; label: string; sub: string }[] = [
-  { id: "memory_foam", label: "Memory foam", sub: "Dense foam, slow return" },
-  { id: "innerspring", label: "Innerspring", sub: "Coil-based, traditional bounce" },
-  { id: "latex", label: "Latex", sub: "Natural or synthetic rubber, responsive" },
-  { id: "hybrid", label: "Hybrid", sub: "Coils + foam or latex layers" },
-];
-
-const FRAME_SUPPORT_OPTIONS: { id: FrameSupport; label: string }[] = [
-  { id: "wooden_slats", label: "Wooden slats" },
-  { id: "metal_grid", label: "Metal grid" },
-  { id: "box_springs", label: "Box springs" },
-];
-
-const SHEET_TYPE_OPTIONS: { id: SheetType; label: string }[] = [
-  { id: "cotton", label: "Cotton" },
-  { id: "bamboo_tencel", label: "Bamboo / Tencel" },
-  { id: "polyester_microfiber", label: "Polyester / Microfiber" },
-  { id: "linen", label: "Linen" },
-  { id: "silk", label: "Silk" },
 ];
 
 function GlassesIcon({ lensColor, frameColor }: { lensColor: string; frameColor: string }) {
