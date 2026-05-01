@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 const variance = z.enum(["consistent", "some", "a_lot"]);
+const timeVariance = z.enum(["30min", "1h", "2h", ">2h"]);
 
 // Step 1 — required
 export const basicsSchema = z.object({
@@ -11,8 +12,10 @@ export const basicsSchema = z.object({
 // Step 2 — Sleep Schedule (all optional)
 export const sleepScheduleSchema = z.object({
   bedtime: z.string().optional(),
+  bedtimeVariance: timeVariance.optional(),
   wakeTime: z.string().optional(),
-  sleepWakeVariance: variance.optional(),
+  wakeTimeVariance: timeVariance.optional(),
+  sleepWakeVariance: variance.optional(), // kept for backwards compat
   sleepAmount: z.enum(["<5", "5-6", "6-7", "7-8", "8-9", "9+"]).optional(),
   sleepAmountVariance: variance.optional(),
   naturalBedtime: z.string().optional(),
@@ -22,6 +25,7 @@ export const sleepScheduleSchema = z.object({
 // Step 3 — Sleep Quality
 export const sleepQualitySchema = z.object({
   sleepSignals: z.array(z.string()).default([]),
+  sleepPatterns: z.array(z.string()).default([]),
   wakeupTypology: z
     .array(
       z.enum([
@@ -45,14 +49,17 @@ export const sleepQualitySchema = z.object({
 // Step 4 — Your Bedroom
 export const bedroomSchema = z.object({
   phoneBroughtToRoom: z.boolean().optional(),
+  phoneAppsAm: z.string().optional(),
+  phoneAppsPm: z.string().optional(),
   itemsOwned: z.array(z.string()).default([]),
   blueLightGlassesColor: z.array(z.string()).default([]),
-  sharesBedWithPartner: z.boolean().optional(),
+  bedSharers: z.array(z.string()).default([]),
+  sharesBedWithPartner: z.boolean().optional(), // kept for backwards compat
   sharesBlanketWithPartner: z.boolean().optional(),
   bedroomOtherUses: z.string().optional(),
   nighttimeTemp: z.enum(["<65", "65-68", "68-72", ">72", "unsure"]).optional(),
   curtainTypes: z
-    .array(z.enum(["none", "blinds", "solid_shades", "fabric_panels", "film_tint", "shutters"]))
+    .array(z.enum(["none", "no_windows", "blinds", "solid_shades", "fabric_panels", "film_tint", "shutters"]))
     .default([]),
   curtainOpacity: z
     .enum(["sheer", "light_filtering", "room_darkening", "blackout"])
@@ -64,6 +71,14 @@ export const bedroomSchema = z.object({
     .record(z.string(), z.enum(["rarely", "sometimes", "often"]))
     .default({}),
   noiseOther: z.string().optional(),
+  // Bed features
+  bedFirmness: z.enum(["bouncy", "contouring", "buoyant", "firm"]).optional(),
+  hasMattressSag: z.boolean().optional(),
+  bedSize: z.enum(["twin", "full", "queen", "king", "cali_king"]).optional(),
+  mattressType: z.enum(["memory_foam", "innerspring", "latex", "hybrid"]).optional(),
+  frameSupport: z.enum(["wooden_slats", "metal_grid", "box_springs"]).optional(),
+  bedAssociations: z.string().optional(),
+  sheetType: z.enum(["cotton", "bamboo_tencel", "polyester_microfiber", "linen", "silk"]).optional(),
 });
 
 // Step 5 — Evening Habits
@@ -73,7 +88,9 @@ export const eveningHabitsSchema = z.object({
   eveningLightLocation: z.array(z.string()).default([]),
   eveningLightTone: z.array(z.string()).default([]),
   eveningLightIntensity: z.string().optional(),
-  eveningDeviceScreen: z.array(z.string()).default([]),
+  eveningDeviceScreen: z.array(z.string()).default([]), // kept for backwards compat
+  eveningScreenTypes: z.array(z.string()).default([]),
+  eveningScreenDimmers: z.array(z.string()).default([]),
 });
 
 // Step 6 — Morning Habits
@@ -116,7 +133,17 @@ export const foodDrinkSchema = z.object({
   waterAdditionOther: z.string().optional(),
   alcoholLast3Days: z.boolean().optional(),
   alcoholEveningPattern: z.boolean().optional(),
-  supplementsMeds: z.string().optional(),
+  hasLowNutrientHistory: z.boolean().optional(),
+  lowNutrientHistoryDetails: z.string().optional(),
+  supplements: z
+    .array(
+      z.object({
+        name: z.string().default(""),
+        dosage: z.string().default(""),
+      })
+    )
+    .default([]),
+  medications: z.string().optional(),
 });
 
 // Step 8 — Movement

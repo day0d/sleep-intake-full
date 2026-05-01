@@ -102,8 +102,11 @@ ${
 - Water additions: ${fmtList(data.waterAdditions)}${data.waterAdditionOther ? ` — other: "${data.waterAdditionOther}"` : ""}
 - Alcohol in last 3 days: ${fmtBool(data.alcoholLast3Days)}
 - Evening alcohol pattern (last 1–2 weeks): ${fmtBool(data.alcoholEveningPattern)}
-- Supplements / medications:
-${data.supplementsMeds ? data.supplementsMeds.split("\n").map((l) => `  - ${l.trim()}`).filter((l) => l !== "  -").join("\n") : "  None listed"}
+- History of low/imbalanced nutrients or biochemical markers: ${fmtBool(data.hasLowNutrientHistory)}${data.lowNutrientHistoryDetails ? ` — "${data.lowNutrientHistoryDetails}"` : ""}
+- Supplements:
+${data.supplements && data.supplements.length > 0 ? data.supplements.map((s) => `  - ${s.name}${s.dosage ? ` (${s.dosage})` : ""}`).join("\n") : "  None listed"}
+- Medications / other treatments:
+${data.medications ? data.medications.split("\n").map((l) => `  - ${l.trim()}`).filter((l) => l !== "  -").join("\n") : "  None listed"}
 
 ## Movement
 - Exercise types: ${fmtList(data.exerciseTypes)}

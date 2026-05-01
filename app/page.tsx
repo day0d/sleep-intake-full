@@ -49,6 +49,7 @@ export default function IntakeForm() {
       eveningDeviceScreen: [],
       caffeineSources: [],
       waterAdditions: [],
+      supplements: [],
       exerciseTypes: [],
       exerciseTiming: [],
       exerciseRecoverySymptoms: [],

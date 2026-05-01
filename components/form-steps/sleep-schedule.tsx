@@ -1,11 +1,12 @@
 "use client";
 
 import { UseFormReturn } from "react-hook-form";
-import { FormData, SleepAmount, Variance } from "@/lib/types";
+import { FormData, SleepAmount, TimeVariance, Variance } from "@/lib/types";
 import { Label } from "@/components/ui/label";
 import { TimePicker } from "@/components/ui/time-picker";
 import { PillRow } from "@/components/ui/pill-row";
 import { VariancePills } from "@/components/ui/variance-pills";
+import { pillStyles } from "@/lib/ui-styles";
 
 interface SleepScheduleProps {
   form: UseFormReturn<FormData>;
@@ -20,14 +21,50 @@ const SLEEP_AMOUNT_OPTIONS = [
   { id: "9+" as const, label: "9+" },
 ];
 
+const TIME_VARIANCE_OPTIONS: { id: TimeVariance; label: string }[] = [
+  { id: "30min", label: "30 min" },
+  { id: "1h", label: "1 hr" },
+  { id: "2h", label: "2 hrs" },
+  { id: ">2h", label: ">2 hrs" },
+];
+
+function TimeVariancePicker({
+  value,
+  onChange,
+}: {
+  value: TimeVariance | undefined;
+  onChange: (v: TimeVariance | undefined) => void;
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-1.5">
+      {TIME_VARIANCE_OPTIONS.map((opt) => {
+        const selected = value === opt.id;
+        return (
+          <button
+            key={opt.id}
+            type="button"
+            onClick={() => onChange(selected ? undefined : opt.id)}
+            className={`rounded-full border-2 py-1.5 text-xs font-medium transition-colors ${
+              selected ? pillStyles.selected : pillStyles.unselected
+            }`}
+          >
+            {opt.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export function SleepSchedule({ form }: SleepScheduleProps) {
   const { setValue, watch } = form;
 
   const bedtime = watch("bedtime");
+  const bedtimeVariance = watch("bedtimeVariance");
   const wakeTime = watch("wakeTime");
+  const wakeTimeVariance = watch("wakeTimeVariance");
   const naturalBedtime = watch("naturalBedtime");
   const naturalWakeTime = watch("naturalWakeTime");
-  const sleepWakeVariance = watch("sleepWakeVariance");
   const sleepAmount = watch("sleepAmount");
   const sleepAmountVariance = watch("sleepAmountVariance");
 
@@ -41,9 +78,10 @@ export function SleepSchedule({ form }: SleepScheduleProps) {
       </p>
 
       <div className="mt-8 space-y-8">
-        <div className="grid grid-cols-2 gap-3">
+        {/* Bedtime + variance */}
+        <div className="grid grid-cols-2 gap-4 items-start">
           <div>
-            <Label className="text-sm font-medium">Usual bedtime</Label>
+            <Label className="text-sm font-medium">Bedtime</Label>
             <div className="mt-1.5">
               <TimePicker
                 value={bedtime}
@@ -52,7 +90,24 @@ export function SleepSchedule({ form }: SleepScheduleProps) {
             </div>
           </div>
           <div>
-            <Label className="text-sm font-medium">Usual wake time</Label>
+            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              Varies by
+            </Label>
+            <div className="mt-1.5">
+              <TimeVariancePicker
+                value={bedtimeVariance}
+                onChange={(v) =>
+                  setValue("bedtimeVariance", v, { shouldDirty: true })
+                }
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Wake time + variance */}
+        <div className="grid grid-cols-2 gap-4 items-start">
+          <div>
+            <Label className="text-sm font-medium">Wake time</Label>
             <div className="mt-1.5">
               <TimePicker
                 value={wakeTime}
@@ -60,21 +115,18 @@ export function SleepSchedule({ form }: SleepScheduleProps) {
               />
             </div>
           </div>
-        </div>
-
-        <div>
-          <Label className="text-sm font-medium">
-            How much do those times vary night-to-night?
-          </Label>
-          <div className="mt-3">
-            <VariancePills
-              value={sleepWakeVariance}
-              onChange={(v) =>
-                setValue("sleepWakeVariance", v as Variance | undefined, {
-                  shouldDirty: true,
-                })
-              }
-            />
+          <div>
+            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              Varies by
+            </Label>
+            <div className="mt-1.5">
+              <TimeVariancePicker
+                value={wakeTimeVariance}
+                onChange={(v) =>
+                  setValue("wakeTimeVariance", v, { shouldDirty: true })
+                }
+              />
+            </div>
           </div>
         </div>
 

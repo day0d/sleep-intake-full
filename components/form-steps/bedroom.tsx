@@ -8,11 +8,17 @@ import {
   CoveringOpacity,
   NoiseSource,
   NoiseFrequency,
+  BedFirmness,
+  BedSize,
+  MattressType,
+  FrameSupport,
+  SheetType,
 } from "@/lib/types";
 import { cardStyles, pillStyles } from "@/lib/ui-styles";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PillRow } from "@/components/ui/pill-row";
+import { Textarea } from "@/components/ui/textarea";
 
 function CurtainIcon({ type }: { type: CurtainType }) {
   const stroke = "currentColor";
@@ -24,6 +30,14 @@ function CurtainIcon({ type }: { type: CurtainType }) {
           <rect x="3" y="3" width="30" height="30" rx="2" stroke={stroke} strokeWidth={sw} />
           <line x1="9" y1="9" x2="27" y2="27" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
           <line x1="27" y1="9" x2="9" y2="27" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
+        </>
+      )}
+      {type === "no_windows" && (
+        <>
+          <rect x="3" y="3" width="30" height="30" rx="2" stroke={stroke} strokeWidth={sw} strokeDasharray="4 2.5" />
+          <line x1="9" y1="9" x2="27" y2="27" stroke={stroke} strokeWidth={sw} strokeLinecap="round" strokeOpacity="0.5" />
+          <line x1="27" y1="9" x2="9" y2="27" stroke={stroke} strokeWidth={sw} strokeLinecap="round" strokeOpacity="0.5" />
+          <circle cx="18" cy="18" r="6" stroke={stroke} strokeWidth={sw} strokeDasharray="3 2" />
         </>
       )}
       {type === "blinds" && (
@@ -97,16 +111,17 @@ const TINT_OPTIONS = [
   { id: "red", label: "Red tint", lensColor: "#EF4444", frameColor: "#7F1D1D" },
 ];
 
-const TEMP_OPTIONS: { id: BedroomTemp; label: string }[] = [
-  { id: "<65", label: "<65°F" },
-  { id: "65-68", label: "65–68°F" },
-  { id: "68-72", label: "68–72°F" },
-  { id: ">72", label: ">72°F" },
-  { id: "unsure", label: "Not sure" },
+const TEMP_OPTIONS: { id: BedroomTemp; label: string; sub: string }[] = [
+  { id: "<65", label: "<65°F", sub: "~<18°C" },
+  { id: "65-68", label: "65–68°F", sub: "~18–20°C" },
+  { id: "68-72", label: "68–72°F", sub: "~20–22°C" },
+  { id: ">72", label: ">72°F", sub: "~>22°C" },
+  { id: "unsure", label: "Not sure", sub: "" },
 ];
 
 const CURTAIN_OPTIONS: { id: CurtainType; label: string }[] = [
-  { id: "none", label: "None" },
+  { id: "no_windows", label: "No windows" },
+  { id: "none", label: "No coverings" },
   { id: "blinds", label: "Blinds (venetian, vertical)" },
   { id: "solid_shades", label: "Solid shades (roller, honeycomb)" },
   { id: "fabric_panels", label: "Fabric panels (curtains, drapes)" },
@@ -136,6 +151,42 @@ const NOISE_FREQ_OPTIONS: { id: NoiseFrequency; label: string }[] = [
   { id: "often", label: "Often" },
 ];
 
+const BED_FIRMNESS_OPTIONS: { id: BedFirmness; label: string; sub: string }[] = [
+  { id: "bouncy", label: "Bouncy", sub: "Springs back quickly, some push-back" },
+  { id: "buoyant", label: "Buoyant", sub: "Floating feeling, gentle support" },
+  { id: "contouring", label: "Contouring", sub: "Molds around your body, hugging feel" },
+  { id: "firm", label: "Firm", sub: "Minimal give, solid surface" },
+];
+
+const BED_SIZE_OPTIONS: { id: BedSize; label: string }[] = [
+  { id: "twin", label: "Twin" },
+  { id: "full", label: "Full" },
+  { id: "queen", label: "Queen" },
+  { id: "king", label: "King" },
+  { id: "cali_king", label: "Cal King" },
+];
+
+const MATTRESS_TYPE_OPTIONS: { id: MattressType; label: string; sub: string }[] = [
+  { id: "memory_foam", label: "Memory foam", sub: "Dense foam, slow return" },
+  { id: "innerspring", label: "Innerspring", sub: "Coil-based, traditional bounce" },
+  { id: "latex", label: "Latex", sub: "Natural or synthetic rubber, responsive" },
+  { id: "hybrid", label: "Hybrid", sub: "Coils + foam or latex layers" },
+];
+
+const FRAME_SUPPORT_OPTIONS: { id: FrameSupport; label: string }[] = [
+  { id: "wooden_slats", label: "Wooden slats" },
+  { id: "metal_grid", label: "Metal grid" },
+  { id: "box_springs", label: "Box springs" },
+];
+
+const SHEET_TYPE_OPTIONS: { id: SheetType; label: string }[] = [
+  { id: "cotton", label: "Cotton" },
+  { id: "bamboo_tencel", label: "Bamboo / Tencel" },
+  { id: "polyester_microfiber", label: "Polyester / Microfiber" },
+  { id: "linen", label: "Linen" },
+  { id: "silk", label: "Silk" },
+];
+
 function GlassesIcon({ lensColor, frameColor }: { lensColor: string; frameColor: string }) {
   return (
     <svg width="64" height="36" viewBox="0 0 64 36" fill="none">
@@ -153,7 +204,7 @@ export function Bedroom({ form }: BedroomProps) {
 
   const phoneBroughtToRoom = watch("phoneBroughtToRoom");
   const itemsOwned = watch("itemsOwned") || [];
-  const sharesBed = watch("sharesBedWithPartner");
+  const bedSharers = watch("bedSharers") || [];
   const sharesBlanket = watch("sharesBlanketWithPartner");
   const hasBlueLight = itemsOwned.includes("Blue-light blocking glasses");
   const selectedTints = watch("blueLightGlassesColor") || [];
@@ -163,8 +214,18 @@ export function Bedroom({ form }: BedroomProps) {
   const noiseSources = watch("noiseSources") || [];
   const noiseFrequency = watch("noiseFrequency") || {};
   const hasNoiseOther = noiseSources.includes("other");
+  const bedFirmness = watch("bedFirmness");
+  const hasMattressSag = watch("hasMattressSag");
+  const bedSize = watch("bedSize");
+  const mattressType = watch("mattressType");
+  const frameSupport = watch("frameSupport");
+  const sheetType = watch("sheetType");
 
-  const hasCoverings = curtainTypes.length > 0 && !curtainTypes.every((c) => c === "none");
+  const hasCoverings =
+    curtainTypes.length > 0 &&
+    !curtainTypes.every((c) => c === "none" || c === "no_windows");
+
+  const sharesWithPartner = bedSharers.includes("partner");
 
   function toggleItem(item: string) {
     const next = itemsOwned.includes(item)
@@ -189,25 +250,36 @@ export function Bedroom({ form }: BedroomProps) {
     });
   }
 
-  function toggleBool(
-    field: "sharesBedWithPartner" | "sharesBlanketWithPartner",
-    val: boolean,
-    current: boolean | undefined
-  ) {
-    if (current === val) {
-      setValue(field, undefined, { shouldDirty: true });
-      if (field === "sharesBedWithPartner") {
-        setValue("sharesBlanketWithPartner", undefined, { shouldDirty: true });
-      }
-    } else {
-      setValue(field, val, { shouldDirty: true });
+  function toggleBedSharer(id: string) {
+    const next = bedSharers.includes(id)
+      ? bedSharers.filter((s) => s !== id)
+      : [...bedSharers, id];
+    setValue("bedSharers", next, { shouldDirty: true });
+    if (!next.includes("partner")) {
+      setValue("sharesBlanketWithPartner", undefined, { shouldDirty: true });
     }
   }
 
+  function toggleBool(
+    field: "sharesBlanketWithPartner",
+    val: boolean,
+    current: boolean | undefined
+  ) {
+    setValue(field, current === val ? undefined : val, { shouldDirty: true });
+  }
+
   function toggleCurtain(id: CurtainType) {
-    const next = curtainTypes.includes(id)
-      ? curtainTypes.filter((c) => c !== id)
-      : [...curtainTypes, id];
+    if (id === "no_windows") {
+      const isSelected = curtainTypes.includes("no_windows");
+      setValue("curtainTypes", isSelected ? [] : ["no_windows"], { shouldDirty: true });
+      setValue("curtainOpacity", undefined, { shouldDirty: true });
+      return;
+    }
+    // Selecting any real covering removes "no_windows"
+    const filtered = curtainTypes.filter((c) => c !== "no_windows");
+    const next = filtered.includes(id)
+      ? filtered.filter((c) => c !== id)
+      : [...filtered, id];
     setValue("curtainTypes", next, { shouldDirty: true });
     if (next.every((c) => c === "none") || next.length === 0) {
       setValue("curtainOpacity", undefined, { shouldDirty: true });
@@ -245,6 +317,7 @@ export function Bedroom({ form }: BedroomProps) {
       </p>
 
       <div className="mt-8 space-y-8">
+        {/* Phone in bedroom */}
         <div>
           <Label className="text-sm font-medium">
             Do you bring your phone into your bedroom at night?
@@ -265,6 +338,32 @@ export function Bedroom({ form }: BedroomProps) {
           </div>
         </div>
 
+        {phoneBroughtToRoom && (
+          <div className="animate-in slide-in-from-top-2 duration-200 space-y-3">
+            <div>
+              <Label className="text-sm font-medium">
+                What apps do you look at in the morning? <span className="font-normal text-muted-foreground">(in bedroom)</span>
+              </Label>
+              <Input
+                placeholder="e.g., email, news, Instagram…"
+                className="mt-1.5 h-12 rounded-xl text-base"
+                {...register("phoneAppsAm")}
+              />
+            </div>
+            <div>
+              <Label className="text-sm font-medium">
+                What apps do you look at at night? <span className="font-normal text-muted-foreground">(in bedroom)</span>
+              </Label>
+              <Input
+                placeholder="e.g., TikTok, YouTube, texts…"
+                className="mt-1.5 h-12 rounded-xl text-base"
+                {...register("phoneAppsPm")}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Sleep accessories */}
         <div>
           <Label className="text-sm font-medium">Do you have any of the following?</Label>
           <div className="mt-3 grid grid-cols-2 gap-3">
@@ -312,25 +411,34 @@ export function Bedroom({ form }: BedroomProps) {
           )}
         </div>
 
+        {/* Bed sharing */}
         <div>
-          <Label className="text-sm font-medium">Do you share a bed with a partner?</Label>
-          <div className="mt-3 flex gap-3">
-            {[true, false].map((val) => (
-              <button
-                key={String(val)}
-                type="button"
-                onClick={() => toggleBool("sharesBedWithPartner", val, sharesBed)}
-                className={`flex-1 rounded-full border-2 py-3 text-sm font-medium transition-colors ${
-                  sharesBed === val ? pillStyles.selected : pillStyles.unselected
-                }`}
-              >
-                {val ? "Yes" : "No"}
-              </button>
-            ))}
+          <Label className="text-sm font-medium">Do you share your bed?</Label>
+          <p className="mt-1 text-xs text-muted-foreground">Select all that apply.</p>
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            {[
+              { id: "partner", label: "Partner", emoji: "🧑‍🤝‍🧑" },
+              { id: "animal", label: "Animal", emoji: "🐾" },
+            ].map((opt) => {
+              const selected = bedSharers.includes(opt.id);
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => toggleBedSharer(opt.id)}
+                  className={`flex flex-col items-center gap-1.5 rounded-2xl border-2 px-3 py-4 text-center transition-colors ${
+                    selected ? cardStyles.selected : cardStyles.unselected
+                  }`}
+                >
+                  <span className="text-2xl">{opt.emoji}</span>
+                  <span className="text-xs font-medium">{opt.label}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {sharesBed && (
+        {sharesWithPartner && (
           <div className="animate-in slide-in-from-top-2 duration-200">
             <Label className="text-sm font-medium">Do you share a blanket?</Label>
             <div className="mt-3 flex gap-3">
@@ -350,6 +458,7 @@ export function Bedroom({ form }: BedroomProps) {
           </div>
         )}
 
+        {/* Other bedroom uses */}
         <div>
           <Label className="text-sm font-medium">
             Do you use your bedroom for anything besides sleep?
@@ -361,21 +470,38 @@ export function Bedroom({ form }: BedroomProps) {
           />
         </div>
 
+        {/* Temperature */}
         <div>
           <Label className="text-sm font-medium">
             What&apos;s your bedroom temperature at night?
           </Label>
-          <div className="mt-3">
-            <PillRow
-              options={TEMP_OPTIONS}
-              value={nighttimeTemp}
-              onChange={(v) =>
-                setValue("nighttimeTemp", v as BedroomTemp | undefined, { shouldDirty: true })
-              }
-            />
+          <div className="mt-3 flex flex-wrap gap-2">
+            {TEMP_OPTIONS.map((opt) => {
+              const selected = nighttimeTemp === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() =>
+                    setValue("nighttimeTemp", selected ? undefined : (opt.id as BedroomTemp), {
+                      shouldDirty: true,
+                    })
+                  }
+                  className={`rounded-2xl border-2 px-4 py-2.5 text-center transition-colors ${
+                    selected ? cardStyles.selected : cardStyles.unselected
+                  }`}
+                >
+                  <p className="text-sm font-medium">{opt.label}</p>
+                  {opt.sub && (
+                    <p className="text-xs text-muted-foreground mt-0.5">{opt.sub}</p>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
 
+        {/* Window coverings */}
         <div>
           <Label className="text-sm font-medium">What kind of window coverings do you have?</Label>
           <p className="mt-1 text-xs text-muted-foreground">Select all that apply.</p>
@@ -427,6 +553,7 @@ export function Bedroom({ form }: BedroomProps) {
           </div>
         )}
 
+        {/* Noise */}
         <div>
           <Label className="text-sm font-medium">What wakes or disturbs you at night?</Label>
           <div className="mt-3 grid grid-cols-2 gap-3">
@@ -489,6 +616,153 @@ export function Bedroom({ form }: BedroomProps) {
               />
             </div>
           )}
+        </div>
+
+        {/* ── Your bed ─────────────────────────────────────────── */}
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-base font-semibold text-foreground">Your bed</h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Details about your mattress and frame.
+            </p>
+          </div>
+
+          {/* Firmness / feel */}
+          <div>
+            <Label className="text-sm font-medium">How would you describe the feel?</Label>
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              {BED_FIRMNESS_OPTIONS.map((opt) => {
+                const selected = bedFirmness === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() =>
+                      setValue("bedFirmness", selected ? undefined : (opt.id as BedFirmness), {
+                        shouldDirty: true,
+                      })
+                    }
+                    className={`rounded-2xl border-2 px-4 py-3 text-left transition-colors ${
+                      selected ? cardStyles.selected : cardStyles.unselected
+                    }`}
+                  >
+                    <p className="text-sm font-medium">{opt.label}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{opt.sub}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Sag */}
+          <div>
+            <Label className="text-sm font-medium">
+              Does your mattress have any noticeable sag or indentations?
+            </Label>
+            <div className="mt-3 flex gap-3">
+              {[true, false].map((val) => (
+                <button
+                  key={String(val)}
+                  type="button"
+                  onClick={() =>
+                    setValue("hasMattressSag", hasMattressSag === val ? undefined : val, {
+                      shouldDirty: true,
+                    })
+                  }
+                  className={`flex-1 rounded-full border-2 py-3 text-sm font-medium transition-colors ${
+                    hasMattressSag === val ? pillStyles.selected : pillStyles.unselected
+                  }`}
+                >
+                  {val ? "Yes" : "No"}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Size */}
+          <div>
+            <Label className="text-sm font-medium">Bed size</Label>
+            <div className="mt-3">
+              <PillRow
+                options={BED_SIZE_OPTIONS}
+                value={bedSize}
+                onChange={(v) =>
+                  setValue("bedSize", v as BedSize | undefined, { shouldDirty: true })
+                }
+              />
+            </div>
+          </div>
+
+          {/* Mattress type */}
+          <div>
+            <Label className="text-sm font-medium">Mattress type</Label>
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              {MATTRESS_TYPE_OPTIONS.map((opt) => {
+                const selected = mattressType === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() =>
+                      setValue("mattressType", selected ? undefined : (opt.id as MattressType), {
+                        shouldDirty: true,
+                      })
+                    }
+                    className={`rounded-2xl border-2 px-4 py-3 text-left transition-colors ${
+                      selected ? cardStyles.selected : cardStyles.unselected
+                    }`}
+                  >
+                    <p className="text-sm font-medium">{opt.label}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{opt.sub}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Frame support */}
+          <div>
+            <Label className="text-sm font-medium">Frame / foundation support</Label>
+            <div className="mt-3">
+              <PillRow
+                options={FRAME_SUPPORT_OPTIONS}
+                value={frameSupport}
+                onChange={(v) =>
+                  setValue("frameSupport", v as FrameSupport | undefined, { shouldDirty: true })
+                }
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Bed associations */}
+        <div>
+          <Label className="text-sm font-medium">
+            What feelings or associations do you have with your bed?
+          </Label>
+          <p className="mt-1 text-xs text-muted-foreground">
+            e.g., comfort, anxiety, refuge, restlessness, neutral…
+          </p>
+          <div className="mt-1.5">
+            <Textarea
+              placeholder="Describe how you feel about your bed…"
+              {...register("bedAssociations")}
+            />
+          </div>
+        </div>
+
+        {/* Sheet type */}
+        <div>
+          <Label className="text-sm font-medium">What type of bedsheets do you use?</Label>
+          <div className="mt-3">
+            <PillRow
+              options={SHEET_TYPE_OPTIONS}
+              value={sheetType}
+              onChange={(v) =>
+                setValue("sheetType", v as SheetType | undefined, { shouldDirty: true })
+              }
+            />
+          </div>
         </div>
       </div>
     </div>

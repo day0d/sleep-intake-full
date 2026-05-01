@@ -1,9 +1,11 @@
 export type Variance = "consistent" | "some" | "a_lot";
+export type TimeVariance = "30min" | "1h" | "2h" | ">2h";
 export type SleepAmount = "<5" | "5-6" | "6-7" | "7-8" | "8-9" | "9+";
 export type BedroomTemp = "<65" | "65-68" | "68-72" | ">72" | "unsure";
 
 export type CurtainType =
   | "none"
+  | "no_windows"
   | "blinds"
   | "solid_shades"
   | "fabric_panels"
@@ -24,6 +26,12 @@ export type NoiseSource =
   | "tv_devices"
   | "other";
 export type NoiseFrequency = "rarely" | "sometimes" | "often";
+
+export type BedFirmness = "bouncy" | "contouring" | "buoyant" | "firm";
+export type BedSize = "twin" | "full" | "queen" | "king" | "cali_king";
+export type MattressType = "memory_foam" | "innerspring" | "latex" | "hybrid";
+export type FrameSupport = "wooden_slats" | "metal_grid" | "box_springs";
+export type SheetType = "cotton" | "bamboo_tencel" | "polyester_microfiber" | "linen" | "silk";
 
 export type PmPhoneWindow = "in_bed" | "30m" | "1h" | "2h+" | "not_sure";
 
@@ -68,6 +76,11 @@ export interface FoodLogEntry {
   location: string;
 }
 
+export interface SupplementEntry {
+  name: string;
+  dosage: string;
+}
+
 export interface FormData {
   // Step 1: Basics
   name: string;
@@ -75,8 +88,10 @@ export interface FormData {
 
   // Step 2: Sleep Schedule
   bedtime?: string;
+  bedtimeVariance?: TimeVariance;
   wakeTime?: string;
-  sleepWakeVariance?: Variance;
+  wakeTimeVariance?: TimeVariance;
+  sleepWakeVariance?: Variance; // kept for backwards compat
   sleepAmount?: SleepAmount;
   sleepAmountVariance?: Variance;
   naturalBedtime?: string;
@@ -84,15 +99,19 @@ export interface FormData {
 
   // Step 3: Sleep Quality
   sleepSignals: string[];
+  sleepPatterns: string[];
   wakeupTypology: WakeupType[];
   wakeupOther?: string;
   lyingAwakeState: string[];
 
   // Step 4: Your Bedroom
   phoneBroughtToRoom?: boolean;
+  phoneAppsAm?: string;
+  phoneAppsPm?: string;
   itemsOwned: string[];
   blueLightGlassesColor: string[];
-  sharesBedWithPartner?: boolean;
+  bedSharers: string[];
+  sharesBedWithPartner?: boolean; // kept for backwards compat
   sharesBlanketWithPartner?: boolean;
   bedroomOtherUses: string;
   nighttimeTemp?: BedroomTemp;
@@ -101,6 +120,14 @@ export interface FormData {
   noiseSources: NoiseSource[];
   noiseFrequency: Partial<Record<NoiseSource, NoiseFrequency>>;
   noiseOther?: string;
+  // Bed features
+  bedFirmness?: BedFirmness;
+  hasMattressSag?: boolean;
+  bedSize?: BedSize;
+  mattressType?: MattressType;
+  frameSupport?: FrameSupport;
+  bedAssociations?: string;
+  sheetType?: SheetType;
 
   // Step 5: Evening Habits
   pmRoutine?: string;
@@ -108,7 +135,9 @@ export interface FormData {
   eveningLightLocation: string[];
   eveningLightTone: string[];
   eveningLightIntensity?: string;
-  eveningDeviceScreen: string[];
+  eveningDeviceScreen: string[]; // kept for backwards compat
+  eveningScreenTypes: string[];
+  eveningScreenDimmers: string[];
 
   // Step 6: Morning Habits
   amRoutine?: string;
@@ -130,7 +159,10 @@ export interface FormData {
   waterAdditionOther?: string;
   alcoholLast3Days?: boolean;
   alcoholEveningPattern?: boolean;
-  supplementsMeds?: string;
+  hasLowNutrientHistory?: boolean;
+  lowNutrientHistoryDetails?: string;
+  supplements: SupplementEntry[];
+  medications?: string;
 
   // Step 8: Movement
   exerciseTypes: string[];
