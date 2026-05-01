@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import { PillRow } from "@/components/ui/pill-row";
 import { Textarea } from "@/components/ui/textarea";
 
+
 function CurtainIcon({ type }: { type: CurtainType }) {
   const stroke = "currentColor";
   const sw = 1.5;
@@ -249,6 +250,7 @@ export function Bedroom({ form }: BedroomProps) {
       shouldDirty: true,
     });
   }
+
 
   function toggleBedSharer(id: string) {
     const next = bedSharers.includes(id)
@@ -610,7 +612,7 @@ export function Bedroom({ form }: BedroomProps) {
             <div className="mt-3 animate-in slide-in-from-top-2 duration-200">
               <Label className="text-sm font-medium">What wakes or disturbs you?</Label>
               <Input
-                placeholder="Describe what else disturbs you…"
+                placeholder="Describe what else disturbs you..."
                 className="mt-1.5 h-12 rounded-xl text-base"
                 {...register("noiseOther")}
               />
@@ -618,7 +620,7 @@ export function Bedroom({ form }: BedroomProps) {
           )}
         </div>
 
-        {/* ── Your bed ─────────────────────────────────────────── */}
+        {/* Your bed */}
         <div className="space-y-6">
           <div>
             <h2 className="text-base font-semibold text-foreground">Your bed</h2>
@@ -627,9 +629,8 @@ export function Bedroom({ form }: BedroomProps) {
             </p>
           </div>
 
-          {/* Firmness / feel */}
           <div>
-            <Label className="text-sm font-medium">How would you describe the feel?</Label>
+            <Label className="text-sm font-medium">How would you describe the feel of your mattress?</Label>
             <div className="mt-3 grid grid-cols-2 gap-3">
               {BED_FIRMNESS_OPTIONS.map((opt) => {
                 const selected = bedFirmness === opt.id;
@@ -654,7 +655,6 @@ export function Bedroom({ form }: BedroomProps) {
             </div>
           </div>
 
-          {/* Sag */}
           <div>
             <Label className="text-sm font-medium">
               Does your mattress have any noticeable sag or indentations?
@@ -679,7 +679,6 @@ export function Bedroom({ form }: BedroomProps) {
             </div>
           </div>
 
-          {/* Size */}
           <div>
             <Label className="text-sm font-medium">Bed size</Label>
             <div className="mt-3">
@@ -693,7 +692,6 @@ export function Bedroom({ form }: BedroomProps) {
             </div>
           </div>
 
-          {/* Mattress type */}
           <div>
             <Label className="text-sm font-medium">Mattress type</Label>
             <div className="mt-3 grid grid-cols-2 gap-3">
@@ -720,9 +718,8 @@ export function Bedroom({ form }: BedroomProps) {
             </div>
           </div>
 
-          {/* Frame support */}
           <div>
-            <Label className="text-sm font-medium">Frame / foundation support</Label>
+            <Label className="text-sm font-medium">Frame / foundation</Label>
             <div className="mt-3">
               <PillRow
                 options={FRAME_SUPPORT_OPTIONS}
@@ -733,35 +730,31 @@ export function Bedroom({ form }: BedroomProps) {
               />
             </div>
           </div>
-        </div>
 
-        {/* Bed associations */}
-        <div>
-          <Label className="text-sm font-medium">
-            What feelings or associations do you have with your bed?
-          </Label>
-          <p className="mt-1 text-xs text-muted-foreground">
-            e.g., comfort, anxiety, refuge, restlessness, neutral…
-          </p>
-          <div className="mt-1.5">
-            <Textarea
-              placeholder="Describe how you feel about your bed…"
-              {...register("bedAssociations")}
-            />
+          <div>
+            <Label className="text-sm font-medium">Bed associations</Label>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Is your bed used for things other than sleep and sex?
+            </p>
+            <div className="mt-1.5">
+              <Textarea
+                placeholder="e.g., I work from bed, watch TV, eat meals…"
+                {...register("bedAssociations")}
+              />
+            </div>
           </div>
-        </div>
 
-        {/* Sheet type */}
-        <div>
-          <Label className="text-sm font-medium">What type of bedsheets do you use?</Label>
-          <div className="mt-3">
-            <PillRow
-              options={SHEET_TYPE_OPTIONS}
-              value={sheetType}
-              onChange={(v) =>
-                setValue("sheetType", v as SheetType | undefined, { shouldDirty: true })
-              }
-            />
+          <div>
+            <Label className="text-sm font-medium">Sheet / bedding material</Label>
+            <div className="mt-3">
+              <PillRow
+                options={SHEET_TYPE_OPTIONS}
+                value={sheetType}
+                onChange={(v) =>
+                  setValue("sheetType", v as SheetType | undefined, { shouldDirty: true })
+                }
+              />
+            </div>
           </div>
         </div>
       </div>

@@ -251,7 +251,8 @@ export function EveningHabits({ form }: EveningHabitsProps) {
           </p>
 
           <div className="mt-4 rounded-2xl border border-border bg-muted/20 p-4 space-y-5">
-            {/* Type */}
+
+            {/* Type of lighting */}
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 Type of lighting
@@ -335,11 +336,7 @@ export function EveningHabits({ form }: EveningHabitsProps) {
                       key={o.id}
                       type="button"
                       onClick={() =>
-                        setValue(
-                          "eveningLightIntensity",
-                          selected ? undefined : o.id,
-                          { shouldDirty: true }
-                        )
+                        setValue("eveningLightIntensity", selected ? undefined : o.id, { shouldDirty: true })
                       }
                       className={`w-full rounded-2xl border-2 px-4 py-3 text-left transition-colors ${
                         selected ? cardStyles.selected : cardStyles.unselected

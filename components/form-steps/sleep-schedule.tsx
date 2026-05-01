@@ -5,7 +5,6 @@ import { FormData, SleepAmount, TimeVariance, Variance } from "@/lib/types";
 import { Label } from "@/components/ui/label";
 import { TimePicker } from "@/components/ui/time-picker";
 import { PillRow } from "@/components/ui/pill-row";
-import { VariancePills } from "@/components/ui/variance-pills";
 import { pillStyles } from "@/lib/ui-styles";
 
 interface SleepScheduleProps {
@@ -149,11 +148,11 @@ export function SleepSchedule({ form }: SleepScheduleProps) {
 
         <div>
           <Label className="text-sm font-medium">
-            Does your total sleep vary a lot?
+            How much does your total sleep vary night-to-night?
           </Label>
           <div className="mt-3">
-            <VariancePills
-              value={sleepAmountVariance}
+            <TimeVariancePicker
+              value={sleepAmountVariance as TimeVariance | undefined}
               onChange={(v) =>
                 setValue("sleepAmountVariance", v as Variance | undefined, {
                   shouldDirty: true,

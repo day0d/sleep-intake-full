@@ -37,26 +37,11 @@ const LYING_AWAKE_OPTIONS = [
   { id: "both_tired", label: "Both physically and mentally tired" },
 ];
 
-const SLEEP_PATTERNS: { id: string; emoji: string; label: string; sub: string }[] = [
-  {
-    id: "wired_late",
-    emoji: "🌙",
-    label: "Wired late into the night",
-    sub: "Can't wind down — sleep finally arrives in the early morning hours",
-  },
-  {
-    id: "early_waking",
-    emoji: "🌅",
-    label: "Wake in the night or early morning",
-    sub: "Fall asleep fine, but wake mid-night or early morning and lie awake",
-  },
-];
 
 export function SleepQuality({ form }: SleepQualityProps) {
   const { register, setValue, watch } = form;
 
   const sleepSignals = watch("sleepSignals") || [];
-  const sleepPatterns = watch("sleepPatterns") || [];
   const wakeupTypology = watch("wakeupTypology") || [];
   const lyingAwakeState = watch("lyingAwakeState") || [];
 
@@ -102,13 +87,6 @@ export function SleepQuality({ form }: SleepQualityProps) {
     setValue("lyingAwakeState", next, { shouldDirty: true });
   }
 
-  function togglePattern(id: string) {
-    const next = sleepPatterns.includes(id)
-      ? sleepPatterns.filter((p) => p !== id)
-      : [...sleepPatterns, id];
-    setValue("sleepPatterns", next, { shouldDirty: true });
-  }
-
   return (
     <div className="px-6 py-8">
       <h1 className="text-center text-2xl font-bold text-foreground">Sleep quality</h1>
@@ -133,34 +111,6 @@ export function SleepQuality({ form }: SleepQualityProps) {
                 >
                   <span className="text-2xl">{s.emoji}</span>
                   <span className="text-xs font-medium leading-tight">{s.id}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div>
-          <Label className="text-sm font-medium">Do any of these patterns apply?</Label>
-          <p className="mt-1 text-xs text-muted-foreground">Select all that apply.</p>
-          <div className="mt-3 space-y-2">
-            {SLEEP_PATTERNS.map((p) => {
-              const selected = sleepPatterns.includes(p.id);
-              return (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => togglePattern(p.id)}
-                  className={`w-full rounded-2xl border-2 px-4 py-3 text-left transition-colors ${
-                    selected ? cardStyles.selected : cardStyles.unselected
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <span className="text-2xl leading-none">{p.emoji}</span>
-                    <div>
-                      <p className="text-sm font-medium">{p.label}</p>
-                      <p className="mt-0.5 text-xs text-muted-foreground">{p.sub}</p>
-                    </div>
-                  </div>
                 </button>
               );
             })}

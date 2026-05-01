@@ -79,6 +79,9 @@ export function MorningHabits({ form }: MorningHabitsProps) {
           <Label className="text-sm font-medium">
             How soon after waking do you get direct sunlight?
           </Label>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Direct sunlight = actual sun contact on your skin — outside or by an open window. Counts even on cloudy days; indoor light through glass does not count.
+          </p>
           <div className="mt-3">
             <PillRow
               options={SUN_EXPOSURE_OPTIONS}

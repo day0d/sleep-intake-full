@@ -172,8 +172,3 @@ export interface FormData {
   exerciseTimingVariance?: Variance;
   exerciseRecoverySymptoms: string[];
 }
-
-export interface SubmissionResponse {
-  success: boolean;
-  id: string;
-}
