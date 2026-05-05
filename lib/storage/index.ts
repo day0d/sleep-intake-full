@@ -6,6 +6,8 @@ export {
   buildFolderName,
   buildPhotoFileName,
   buildAssessmentFileName,
+  buildLeadSurveyFolderName,
+  buildLeadSurveyAssessmentFileName,
 } from "./types";
 
 let cachedAdapter: StorageAdapter | null = null;
@@ -28,7 +30,7 @@ export function getStorageAdapter(): StorageAdapter {
     }
     default:
       throw new Error(
-        `Unknown STORAGE_PROVIDER: "${provider}". Use "supabase" or "google-drive".`
+        "Unknown STORAGE_PROVIDER: " + JSON.stringify(provider) + ". Use supabase or google-drive."
       );
   }
 

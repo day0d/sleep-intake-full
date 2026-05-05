@@ -9,13 +9,18 @@ export const basicsSchema = z.object({
   email: z.string().email("Please enter a valid email"),
 });
 
+// Lead Survey Step 1 extras (optional)
+export const leadBasicsExtrasSchema = z.object({
+  sleepReason: z.string().optional(),
+});
+
 // Step 2 — Sleep Schedule (all optional)
 export const sleepScheduleSchema = z.object({
   bedtime: z.string().optional(),
   bedtimeVariance: timeVariance.optional(),
   wakeTime: z.string().optional(),
   wakeTimeVariance: timeVariance.optional(),
-  sleepWakeVariance: variance.optional(), // kept for backwards compat
+  sleepWakeVariance: variance.optional(),
   sleepAmount: z.enum(["<5", "5-6", "6-7", "7-8", "8-9", "9+"]).optional(),
   sleepAmountVariance: variance.optional(),
   naturalBedtime: z.string().optional(),
@@ -54,7 +59,7 @@ export const bedroomSchema = z.object({
   itemsOwned: z.array(z.string()).default([]),
   blueLightGlassesColor: z.array(z.string()).default([]),
   bedSharers: z.array(z.string()).default([]),
-  sharesBedWithPartner: z.boolean().optional(), // kept for backwards compat
+  sharesBedWithPartner: z.boolean().optional(),
   sharesBlanketWithPartner: z.boolean().optional(),
   bedroomOtherUses: z.string().optional(),
   nighttimeTemp: z.enum(["<65", "65-68", "68-72", ">72", "unsure"]).optional(),
@@ -71,7 +76,6 @@ export const bedroomSchema = z.object({
     .record(z.string(), z.enum(["rarely", "sometimes", "often"]))
     .default({}),
   noiseOther: z.string().optional(),
-  // Bed features
   bedFirmness: z.enum(["bouncy", "contouring", "buoyant", "firm"]).optional(),
   hasMattressSag: z.boolean().optional(),
   bedSize: z.enum(["twin", "full", "queen", "king", "cali_king"]).optional(),
@@ -88,7 +92,7 @@ export const eveningHabitsSchema = z.object({
   eveningLightLocation: z.array(z.string()).default([]),
   eveningLightTone: z.array(z.string()).default([]),
   eveningLightIntensity: z.string().optional(),
-  eveningDeviceScreen: z.array(z.string()).default([]), // kept for backwards compat
+  eveningDeviceScreen: z.array(z.string()).default([]),
   eveningScreenTypes: z.array(z.string()).default([]),
   eveningScreenDimmers: z.array(z.string()).default([]),
 });
@@ -124,7 +128,9 @@ export const foodDrinkSchema = z.object({
     )
     .default([]),
   firstMealTime: z.string().optional(),
+  firstMealContent: z.string().optional(),
   lastMealTime: z.string().optional(),
+  lastMealContent: z.string().optional(),
   caffeineSources: z.array(z.string()).default([]),
   caffeineSourceOther: z.string().optional(),
   firstCaffeineTime: z.string().optional(),
@@ -140,6 +146,25 @@ export const foodDrinkSchema = z.object({
       z.object({
         name: z.string().default(""),
         dosage: z.string().default(""),
+      })
+    )
+    .default([]),
+  dailySupplements: z
+    .array(
+      z.object({
+        name: z.string().default(""),
+        dosage: z.string().default(""),
+        magnesiumForm: z.string().optional(),
+      })
+    )
+    .default([]),
+  sleepSupplements: z
+    .array(
+      z.object({
+        name: z.string().default(""),
+        dosage: z.string().default(""),
+        magnesiumForm: z.string().optional(),
+        otherDetails: z.string().optional(),
       })
     )
     .default([]),
@@ -168,3 +193,16 @@ export const fullFormSchema = basicsSchema
   .merge(movementSchema);
 
 export type FullFormData = z.infer<typeof fullFormSchema>;
+
+// ── Lead Survey (Pre-Strategy Session) schema ────────────────────────
+export const leadSurveySchema = basicsSchema
+  .merge(leadBasicsExtrasSchema)
+  .merge(sleepQualitySchema)
+  .merge(sleepScheduleSchema)
+  .merge(bedroomSchema)
+  .merge(eveningHabitsSchema)
+  .merge(morningHabitsSchema)
+  .merge(foodDrinkSchema)
+  .merge(movementSchema);
+
+export type LeadSurveyFormData = z.infer<typeof leadSurveySchema>;

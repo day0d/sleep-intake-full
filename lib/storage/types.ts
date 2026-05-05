@@ -38,26 +38,42 @@ export function slugifyName(name: string): string {
     .replace(/\s+/g, "-");
 }
 
-/** Build the submission folder name: "2026-04-18 - John Doe - Sleep Intake - 1745612345678"
- *  The trailing timestamp (ms epoch) guarantees uniqueness even if the same
- *  name is submitted more than once on the same day.
- */
+// ── Full Intake Client naming ────────────────────────────────────────
+
+/** Build the full intake folder name: "2026-04-18 - John Doe - Full Intake Client - 1745612345678" */
 export function buildFolderName(name: string, date: Date): string {
   const dateStr = date.toISOString().split("T")[0];
   const uid = date.getTime();
-  return `${dateStr} - ${name.trim()} - Sleep Intake - ${uid}`;
+  return dateStr + " - " + name.trim() + " - Full Intake Client - " + uid;
 }
 
 /** Build a photo file name: "John-Doe_bed.jpg" */
 export function buildPhotoFileName(name: string, photoKey: string): string {
   const slug = slugifyName(name);
-  return `${slug}_${photoKey}.jpg`;
+  return slug + "_" + photoKey + ".jpg";
 }
 
-/** Build the assessment file name: "John-Doe_sleep-intake-results_2026-04-18_1745612345678.md" */
+/** Build the full intake assessment file name: "John-Doe_full-intake-results_2026-04-18_1745612345678.md" */
 export function buildAssessmentFileName(name: string, date: Date): string {
   const slug = slugifyName(name);
   const dateStr = date.toISOString().split("T")[0];
   const uid = date.getTime();
-  return `${slug}_sleep-intake-results_${dateStr}_${uid}.md`;
+  return slug + "_full-intake-results_" + dateStr + "_" + uid + ".md";
+}
+
+// ── Lead Survey (Pre-Strategy Session) naming ────────────────────────
+
+/** Build the lead survey folder name: "2026-04-18 - John Doe - Lead Survey - 1745612345678" */
+export function buildLeadSurveyFolderName(name: string, date: Date): string {
+  const dateStr = date.toISOString().split("T")[0];
+  const uid = date.getTime();
+  return dateStr + " - " + name.trim() + " - Lead Survey - " + uid;
+}
+
+/** Build the lead survey assessment file name: "John-Doe_lead-survey-results_2026-04-18_1745612345678.md" */
+export function buildLeadSurveyAssessmentFileName(name: string, date: Date): string {
+  const slug = slugifyName(name);
+  const dateStr = date.toISOString().split("T")[0];
+  const uid = date.getTime();
+  return slug + "_lead-survey-results_" + dateStr + "_" + uid + ".md";
 }

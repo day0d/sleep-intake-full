@@ -81,39 +81,49 @@ export interface SupplementEntry {
   dosage: string;
 }
 
+export interface DailySupplementEntry {
+  name: string;
+  dosage: string;
+  magnesiumForm?: string;
+}
+
+export interface SleepSupplementEntry {
+  name: string;
+  dosage: string;
+  magnesiumForm?: string;
+  otherDetails?: string;
+}
+
 export interface FormData {
-  // Step 1: Basics
   name: string;
   email: string;
   openToCoaching?: boolean;
   sleepMotivation?: string;
+  sleepReason?: string;
 
-  // Step 2: Sleep Schedule
   bedtime?: string;
   bedtimeVariance?: TimeVariance;
   wakeTime?: string;
   wakeTimeVariance?: TimeVariance;
-  sleepWakeVariance?: Variance; // kept for backwards compat
+  sleepWakeVariance?: Variance;
   sleepAmount?: SleepAmount;
   sleepAmountVariance?: Variance;
   naturalBedtime?: string;
   naturalWakeTime?: string;
 
-  // Step 3: Sleep Quality
   sleepSignals: string[];
   sleepPatterns: string[];
   wakeupTypology: WakeupType[];
   wakeupOther?: string;
   lyingAwakeState: string[];
 
-  // Step 4: Your Bedroom
   phoneBroughtToRoom?: boolean;
   phoneAppsAm?: string;
   phoneAppsPm?: string;
   itemsOwned: string[];
   blueLightGlassesColor: string[];
   bedSharers: string[];
-  sharesBedWithPartner?: boolean; // kept for backwards compat
+  sharesBedWithPartner?: boolean;
   sharesBlanketWithPartner?: boolean;
   bedroomOtherUses: string;
   nighttimeTemp?: BedroomTemp;
@@ -122,7 +132,6 @@ export interface FormData {
   noiseSources: NoiseSource[];
   noiseFrequency: Partial<Record<NoiseSource, NoiseFrequency>>;
   noiseOther?: string;
-  // Bed features
   bedFirmness?: BedFirmness;
   hasMattressSag?: boolean;
   bedSize?: BedSize;
@@ -132,17 +141,15 @@ export interface FormData {
   sheetType?: SheetType;
   otherSleepTechDetails?: string;
 
-  // Step 5: Evening Habits
   pmRoutine?: string;
   pmPhoneWindow?: PmPhoneWindow;
   eveningLightLocation: string[];
   eveningLightTone: string[];
   eveningLightIntensity?: string;
-  eveningDeviceScreen: string[]; // kept for backwards compat
+  eveningDeviceScreen: string[];
   eveningScreenTypes: string[];
   eveningScreenDimmers: string[];
 
-  // Step 6: Morning Habits
   amRoutine?: string;
   amSunExposure?: AmSunExposure;
   amSunDuration?: AmSunDuration;
@@ -150,10 +157,11 @@ export interface FormData {
   amPhoneWindow?: AmPhoneWindow;
   firstSocialWindow?: FirstSocialWindow;
 
-  // Step 7: Food & Drink
   foodLog: FoodLogEntry[];
   firstMealTime?: string;
+  firstMealContent?: string;
   lastMealTime?: string;
+  lastMealContent?: string;
   caffeineSources: string[];
   caffeineSourceOther?: string;
   firstCaffeineTime?: string;
@@ -165,9 +173,10 @@ export interface FormData {
   hasLowNutrientHistory?: boolean;
   lowNutrientHistoryDetails?: string;
   supplements: SupplementEntry[];
+  dailySupplements: DailySupplementEntry[];
+  sleepSupplements: SleepSupplementEntry[];
   medications?: string;
 
-  // Step 8: Movement
   exerciseTypes: string[];
   exerciseFrequency?: ExerciseFrequency;
   exerciseFrequencyVariance?: Variance;

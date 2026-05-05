@@ -1,0 +1,483 @@
+"use client";
+
+import { UseFormReturn } from "react-hook-form";
+import {
+  FormData,
+  BedroomTemp,
+  CurtainType,
+  CoveringOpacity,
+} from "@/lib/types";
+import { cardStyles, pillStyles } from "@/lib/ui-styles";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+// ── Curtain SVG icon (copied from full intake bedroom) ──────────────
+
+function CurtainIcon({ type }: { type: CurtainType }) {
+  const stroke = "currentColor";
+  const sw = 1.5;
+  return (
+    <svg width="36" height="36" viewBox="0 0 36 36" fill="none" className="text-foreground">
+      {type === "none" && (
+        <>
+          <rect x="3" y="3" width="30" height="30" rx="2" stroke={stroke} strokeWidth={sw} />
+          <line x1="9" y1="9" x2="27" y2="27" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
+          <line x1="27" y1="9" x2="9" y2="27" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
+        </>
+      )}
+      {type === "no_windows" && (
+        <>
+          <rect x="3" y="3" width="30" height="30" rx="2" stroke={stroke} strokeWidth={sw} strokeDasharray="4 2.5" />
+          <line x1="9" y1="9" x2="27" y2="27" stroke={stroke} strokeWidth={sw} strokeLinecap="round" strokeOpacity="0.5" />
+          <line x1="27" y1="9" x2="9" y2="27" stroke={stroke} strokeWidth={sw} strokeLinecap="round" strokeOpacity="0.5" />
+          <circle cx="18" cy="18" r="6" stroke={stroke} strokeWidth={sw} strokeDasharray="3 2" />
+        </>
+      )}
+      {type === "blinds" && (
+        <>
+          <rect x="3" y="3" width="30" height="30" rx="2" stroke={stroke} strokeWidth={sw} />
+          {[9, 14, 19, 24, 29].map((y) => (
+            <line key={y} x1="5" y1={y} x2="31" y2={y} stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
+          ))}
+        </>
+      )}
+      {type === "solid_shades" && (
+        <>
+          <rect x="3" y="3" width="30" height="30" rx="2" stroke={stroke} strokeWidth={sw} />
+          <rect x="3" y="3" width="30" height="14" rx="2" fill={stroke} fillOpacity="0.15" />
+          <line x1="5" y1="17" x2="31" y2="17" stroke={stroke} strokeWidth={sw} />
+          <line x1="16" y1="3" x2="16" y2="17" stroke={stroke} strokeWidth={sw * 0.8} strokeDasharray="2 2" />
+          <line x1="20" y1="3" x2="20" y2="17" stroke={stroke} strokeWidth={sw * 0.8} strokeDasharray="2 2" />
+        </>
+      )}
+      {type === "fabric_panels" && (
+        <>
+          <rect x="3" y="3" width="30" height="30" rx="2" stroke={stroke} strokeWidth={sw} />
+          <path d="M3 3 Q10 6 8 33" stroke={stroke} strokeWidth={sw} fill="none" strokeLinecap="round" />
+          <path d="M33 3 Q26 6 28 33" stroke={stroke} strokeWidth={sw} fill="none" strokeLinecap="round" />
+          <line x1="3" y1="5" x2="33" y2="5" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
+        </>
+      )}
+      {type === "film_tint" && (
+        <>
+          <rect x="3" y="3" width="30" height="30" rx="2" stroke={stroke} strokeWidth={sw} />
+          <rect x="3" y="3" width="30" height="30" rx="2" fill={stroke} fillOpacity="0.12" />
+          {[0, 1, 2, 3].map((i) => (
+            <line key={i} x1={6 + i * 8} y1="3" x2={3 + i * 8} y2="33" stroke={stroke} strokeWidth={sw * 0.6} strokeOpacity="0.4" />
+          ))}
+        </>
+      )}
+      {type === "shutters" && (
+        <>
+          <rect x="3" y="3" width="30" height="30" rx="2" stroke={stroke} strokeWidth={sw} />
+          <line x1="18" y1="3" x2="18" y2="33" stroke={stroke} strokeWidth={sw} />
+          {[9, 15, 21, 27].map((y) => (
+            <line key={y} x1="5" y1={y} x2="16" y2={y} stroke={stroke} strokeWidth={sw * 0.8} strokeLinecap="round" />
+          ))}
+          {[9, 15, 21, 27].map((y) => (
+            <line key={y} x1="20" y1={y} x2="31" y2={y} stroke={stroke} strokeWidth={sw * 0.8} strokeLinecap="round" />
+          ))}
+        </>
+      )}
+    </svg>
+  );
+}
+
+function GlassesIcon({ lensColor, frameColor }: { lensColor: string; frameColor: string }) {
+  return (
+    <svg width="64" height="36" viewBox="0 0 64 36" fill="none">
+      <rect x="2" y="8" width="24" height="18" rx="5" fill={lensColor} fillOpacity="0.7" stroke={frameColor} strokeWidth="2.5" />
+      <rect x="38" y="8" width="24" height="18" rx="5" fill={lensColor} fillOpacity="0.7" stroke={frameColor} strokeWidth="2.5" />
+      <path d="M26 17 Q32 13 38 17" stroke={frameColor} strokeWidth="2.5" fill="none" strokeLinecap="round" />
+      <line x1="2" y1="14" x2="0" y2="10" stroke={frameColor} strokeWidth="2" strokeLinecap="round" />
+      <line x1="62" y1="14" x2="64" y2="10" stroke={frameColor} strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+interface LeadBedroomProps {
+  form: UseFormReturn<FormData>;
+}
+
+const ITEMS = [
+  { id: "Sleep mask", emoji: "😴" },
+  { id: "Earplugs", emoji: "👂" },
+  { id: "Sound machine", emoji: "🔊" },
+  { id: "Fan", emoji: "🌀" },
+  { id: "Air conditioning", emoji: "❄️" },
+  { id: "Air purifier", emoji: "🌬️" },
+  { id: "Weighted blanket", emoji: "🛏️" },
+  { id: "Temperature-regulating bed", emoji: "🌡️" },
+  { id: "Blue-light blocking glasses", emoji: "🕶️" },
+  { id: "High quality bedsheets", emoji: "🧵" },
+  { id: "Other Sleep Tech", emoji: "⚙️" },
+];
+
+const TINT_OPTIONS = [
+  { id: "yellow", label: "Yellow tint", lensColor: "#F59E0B", frameColor: "#92400E" },
+  { id: "red", label: "Red tint", lensColor: "#EF4444", frameColor: "#7F1D1D" },
+];
+
+const TEMP_OPTIONS: { id: BedroomTemp; label: string; sub: string }[] = [
+  { id: "<65", label: "<65°F", sub: "~<18°C" },
+  { id: "65-68", label: "65–68°F", sub: "~18–20°C" },
+  { id: "68-72", label: "68–72°F", sub: "~20–22°C" },
+  { id: ">72", label: ">72°F", sub: "~>22°C" },
+  { id: "unsure", label: "Not sure", sub: "" },
+];
+
+const CURTAIN_OPTIONS: { id: CurtainType; label: string }[] = [
+  { id: "no_windows", label: "No windows" },
+  { id: "none", label: "No coverings" },
+  { id: "blinds", label: "Blinds (venetian, vertical)" },
+  { id: "solid_shades", label: "Solid shades (roller, honeycomb)" },
+  { id: "fabric_panels", label: "Fabric panels (curtains, drapes)" },
+  { id: "film_tint", label: "Film or tint" },
+  { id: "shutters", label: "Shutters" },
+];
+
+const OPACITY_OPTIONS: { id: CoveringOpacity; label: string; sub: string }[] = [
+  { id: "sheer", label: "Sheer", sub: "Can see shapes and colors through the fabric" },
+  { id: "light_filtering", label: "Light filtering", sub: "Window glows like a lamp, can't see through" },
+  { id: "room_darkening", label: "Room darkening with window glow", sub: "Room is dark but you can see where windows are" },
+  { id: "blackout", label: "Blackout", sub: "Can't see your hand in front of your face" },
+];
+
+export function LeadBedroom({ form }: LeadBedroomProps) {
+  const { register, setValue, watch } = form;
+
+  const phoneBroughtToRoom = watch("phoneBroughtToRoom");
+  const itemsOwned = watch("itemsOwned") || [];
+  const bedSharers = watch("bedSharers") || [];
+  const sharesBlanket = watch("sharesBlanketWithPartner");
+  const hasBlueLight = itemsOwned.includes("Blue-light blocking glasses");
+  const hasOtherSleepTech = itemsOwned.includes("Other Sleep Tech");
+  const selectedTints = watch("blueLightGlassesColor") || [];
+  const nighttimeTemp = watch("nighttimeTemp");
+  const curtainTypes = watch("curtainTypes") || [];
+  const curtainOpacity = watch("curtainOpacity");
+  const sharesWithPartner = bedSharers.includes("partner");
+  const hasCoverings =
+    curtainTypes.length > 0 &&
+    !curtainTypes.every((c) => c === "none" || c === "no_windows");
+
+  function togglePhone(val: boolean) {
+    setValue("phoneBroughtToRoom", phoneBroughtToRoom === val ? undefined : val, {
+      shouldDirty: true,
+    });
+  }
+
+  function toggleItem(item: string) {
+    const next = itemsOwned.includes(item)
+      ? itemsOwned.filter((i) => i !== item)
+      : [...itemsOwned, item];
+    setValue("itemsOwned", next, { shouldDirty: true });
+    if (item === "Blue-light blocking glasses" && itemsOwned.includes(item)) {
+      setValue("blueLightGlassesColor", [], { shouldDirty: true });
+    }
+  }
+
+  function toggleTint(id: string) {
+    const next = selectedTints.includes(id)
+      ? selectedTints.filter((t) => t !== id)
+      : [...selectedTints, id];
+    setValue("blueLightGlassesColor", next, { shouldDirty: true });
+  }
+
+  function toggleBedSharer(id: string) {
+    const next = bedSharers.includes(id)
+      ? bedSharers.filter((s) => s !== id)
+      : [...bedSharers, id];
+    setValue("bedSharers", next, { shouldDirty: true });
+    if (!next.includes("partner")) {
+      setValue("sharesBlanketWithPartner", undefined, { shouldDirty: true });
+    }
+  }
+
+  function toggleCurtain(id: CurtainType) {
+    if (id === "no_windows") {
+      const isSelected = curtainTypes.includes("no_windows");
+      setValue("curtainTypes", isSelected ? [] : ["no_windows"], { shouldDirty: true });
+      setValue("curtainOpacity", undefined, { shouldDirty: true });
+      return;
+    }
+    const filtered = curtainTypes.filter((c) => c !== "no_windows");
+    const next = filtered.includes(id)
+      ? filtered.filter((c) => c !== id)
+      : [...filtered, id];
+    setValue("curtainTypes", next, { shouldDirty: true });
+    if (next.every((c) => c === "none") || next.length === 0) {
+      setValue("curtainOpacity", undefined, { shouldDirty: true });
+    }
+  }
+
+  return (
+    <div className="px-6 py-8">
+      <h1 className="text-center text-2xl font-bold text-foreground">Your bedroom</h1>
+      <p className="mt-2 text-center text-sm text-muted-foreground">
+        Setup, environment, and what you notice at night.
+      </p>
+
+      <div className="mt-8 space-y-8">
+        {/* Phone in bedroom */}
+        <div>
+          <Label className="text-sm font-medium">
+            Do you bring your phone into your bedroom at night?
+          </Label>
+          <div className="mt-3 flex gap-3">
+            {[true, false].map((val) => (
+              <button
+                key={String(val)}
+                type="button"
+                onClick={() => togglePhone(val)}
+                className={`flex-1 rounded-full border-2 py-3 text-sm font-medium transition-colors ${
+                  phoneBroughtToRoom === val ? pillStyles.selected : pillStyles.unselected
+                }`}
+              >
+                {val ? "Yes" : "No"}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {phoneBroughtToRoom && (
+          <div className="animate-in slide-in-from-top-2 duration-200 space-y-3">
+            <div>
+              <Label className="text-sm font-medium">
+                What apps do you look at in the morning?{" "}
+                <span className="font-normal text-muted-foreground">(in bedroom)</span>
+              </Label>
+              <Input
+                placeholder="e.g., email, news, Instagram…"
+                className="mt-1.5 h-12 rounded-xl text-base"
+                {...register("phoneAppsAm")}
+              />
+            </div>
+            <div>
+              <Label className="text-sm font-medium">
+                What apps do you look at at night?{" "}
+                <span className="font-normal text-muted-foreground">(in bedroom)</span>
+              </Label>
+              <Input
+                placeholder="e.g., TikTok, YouTube, texts…"
+                className="mt-1.5 h-12 rounded-xl text-base"
+                {...register("phoneAppsPm")}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Sleep accessories */}
+        <div>
+          <Label className="text-sm font-medium">Do you have any of the following?</Label>
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            {ITEMS.map((item) => {
+              const selected = itemsOwned.includes(item.id);
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => toggleItem(item.id)}
+                  className={`flex flex-col items-center gap-1.5 rounded-2xl border-2 px-3 py-4 text-center transition-colors ${
+                    selected ? cardStyles.selected : cardStyles.unselected
+                  }`}
+                >
+                  <span className="text-2xl">{item.emoji}</span>
+                  <span className="text-xs font-medium leading-tight">{item.id}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {hasBlueLight && (
+            <div className="mt-3 animate-in slide-in-from-top-2 duration-200">
+              <Label className="mb-1 text-sm font-medium">What tint are your lenses?</Label>
+              <p className="mb-2 text-xs text-muted-foreground">Select all that apply.</p>
+              <div className="grid grid-cols-2 gap-3">
+                {TINT_OPTIONS.map((tint) => {
+                  const selected = selectedTints.includes(tint.id);
+                  return (
+                    <button
+                      key={tint.id}
+                      type="button"
+                      onClick={() => toggleTint(tint.id)}
+                      className={`flex flex-col items-center gap-2 rounded-2xl border-2 px-3 py-4 text-center transition-colors ${
+                        selected ? cardStyles.selected : cardStyles.unselected
+                      }`}
+                    >
+                      <GlassesIcon lensColor={tint.lensColor} frameColor={tint.frameColor} />
+                      <span className="text-xs font-medium leading-tight">{tint.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {hasOtherSleepTech && (
+            <div className="mt-3 animate-in slide-in-from-top-2 duration-200">
+              <Label className="text-sm font-medium">What other sleep tech do you use?</Label>
+              <Input
+                placeholder="e.g., Oura Ring, Dreem headband, CPAP…"
+                className="mt-1.5 h-12 rounded-xl text-base"
+                {...register("otherSleepTechDetails")}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Bed sharing */}
+        <div>
+          <Label className="text-sm font-medium">Do you share your bed?</Label>
+          <p className="mt-1 text-xs text-muted-foreground">Select all that apply.</p>
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            {[
+              { id: "partner", label: "Partner", emoji: "🧑‍🤝‍🧑" },
+              { id: "animal", label: "Animal", emoji: "🐾" },
+            ].map((opt) => {
+              const selected = bedSharers.includes(opt.id);
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => toggleBedSharer(opt.id)}
+                  className={`flex flex-col items-center gap-1.5 rounded-2xl border-2 px-3 py-4 text-center transition-colors ${
+                    selected ? cardStyles.selected : cardStyles.unselected
+                  }`}
+                >
+                  <span className="text-2xl">{opt.emoji}</span>
+                  <span className="text-xs font-medium">{opt.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {sharesWithPartner && (
+          <div className="animate-in slide-in-from-top-2 duration-200">
+            <Label className="text-sm font-medium">Do you share a blanket?</Label>
+            <div className="mt-3 flex gap-3">
+              {[true, false].map((val) => (
+                <button
+                  key={String(val)}
+                  type="button"
+                  onClick={() =>
+                    setValue(
+                      "sharesBlanketWithPartner",
+                      sharesBlanket === val ? undefined : val,
+                      { shouldDirty: true }
+                    )
+                  }
+                  className={`flex-1 rounded-full border-2 py-3 text-sm font-medium transition-colors ${
+                    sharesBlanket === val ? pillStyles.selected : pillStyles.unselected
+                  }`}
+                >
+                  {val ? "Yes" : "No"}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Other bedroom uses */}
+        <div>
+          <Label className="text-sm font-medium">
+            Do you use your bedroom for anything besides sleep?
+          </Label>
+          <Input
+            placeholder="e.g., work, TV, meditation, reading"
+            className="mt-1.5 h-12 rounded-xl text-base"
+            {...register("bedroomOtherUses")}
+          />
+        </div>
+
+        {/* Temperature */}
+        <div>
+          <Label className="text-sm font-medium">
+            What&apos;s your bedroom temperature at night?
+          </Label>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {TEMP_OPTIONS.map((opt) => {
+              const selected = nighttimeTemp === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() =>
+                    setValue("nighttimeTemp", selected ? undefined : (opt.id as BedroomTemp), {
+                      shouldDirty: true,
+                    })
+                  }
+                  className={`rounded-2xl border-2 px-4 py-2.5 text-center transition-colors ${
+                    selected ? cardStyles.selected : cardStyles.unselected
+                  }`}
+                >
+                  <p className="text-sm font-medium">{opt.label}</p>
+                  {opt.sub && (
+                    <p className="text-xs text-muted-foreground mt-0.5">{opt.sub}</p>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Window coverings */}
+        <div>
+          <Label className="text-sm font-medium">
+            What kind of window coverings do you have?
+          </Label>
+          <p className="mt-1 text-xs text-muted-foreground">Select all that apply.</p>
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            {CURTAIN_OPTIONS.map((c) => {
+              const selected = curtainTypes.includes(c.id);
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => toggleCurtain(c.id)}
+                  className={`flex flex-col items-center gap-1.5 rounded-2xl border-2 px-3 py-4 text-center transition-colors ${
+                    selected ? cardStyles.selected : cardStyles.unselected
+                  }`}
+                >
+                  <CurtainIcon type={c.id} />
+                  <span className="text-xs font-medium leading-tight">{c.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {hasCoverings && (
+          <div className="animate-in slide-in-from-top-2 duration-200">
+            <Label className="text-sm font-medium">
+              How opaque are your window coverings?
+            </Label>
+            <div className="mt-3 space-y-2">
+              {OPACITY_OPTIONS.map((o) => {
+                const selected = curtainOpacity === o.id;
+                return (
+                  <button
+                    key={o.id}
+                    type="button"
+                    onClick={() =>
+                      setValue("curtainOpacity", selected ? undefined : o.id, {
+                        shouldDirty: true,
+                      })
+                    }
+                    className={`w-full rounded-2xl border-2 px-4 py-3 text-left transition-colors ${
+                      selected ? cardStyles.selected : cardStyles.unselected
+                    }`}
+                  >
+                    <p className="text-sm font-medium">{o.label}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{o.sub}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

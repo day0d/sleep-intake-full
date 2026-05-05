@@ -5,27 +5,36 @@ import { useForm } from "react-hook-form";
 import { ChevronLeft, Loader2 } from "lucide-react";
 
 import { FormData } from "@/lib/types";
-import { basicsSchema, fullFormSchema } from "@/lib/schema";
+import { basicsSchema } from "@/lib/schema";
 import { generateSubmissionId } from "@/lib/compress";
-import { ProgressBar, SECTION_NAMES } from "@/components/progress-bar";
-import { Basics } from "@/components/form-steps/basics";
-import { SleepSchedule } from "@/components/form-steps/sleep-schedule";
-import { SleepQuality } from "@/components/form-steps/sleep-quality";
-import { Bedroom } from "@/components/form-steps/bedroom";
-import { EveningHabits } from "@/components/form-steps/evening-habits";
-import { MorningHabits } from "@/components/form-steps/morning-habits";
-import { FoodDrink } from "@/components/form-steps/food-drink";
-import { Movement } from "@/components/form-steps/movement";
+import { ProgressBar } from "@/components/progress-bar";
+import { LeadBasics } from "@/components/lead-survey-steps/basics";
+import { LeadSleepSchedule } from "@/components/lead-survey-steps/sleep-schedule";
+import { LeadBedroom } from "@/components/lead-survey-steps/bedroom";
+import { LeadLightCycles } from "@/components/lead-survey-steps/light-cycles";
+import { LeadFoodSupplements } from "@/components/lead-survey-steps/food-supplements";
+import { LeadMovement } from "@/components/lead-survey-steps/movement";
 import { Booking } from "@/components/form-steps/booking";
 
-const TOTAL_STEPS = 9;
-
-const STEP_SCHEMAS = [
-  basicsSchema, // 0: name + email required
-  null, null, null, null, null, null, null, null,
+// ── Lead survey section names (6 survey steps + booking) ────────────
+const LEAD_SECTION_NAMES = [
+  "The Basics",
+  "Sleep Schedule",
+  "Your Bedroom",
+  "Light Cycles",
+  "Food & Supplements",
+  "Movement",
+  "Book a Call",
 ];
 
-export default function IntakeForm() {
+const TOTAL_STEPS = 7; // steps 0–5 = survey, step 6 = booking
+
+const STEP_SCHEMAS = [
+  basicsSchema, // step 0: name + email required
+  null, null, null, null, null, null,
+];
+
+export default function LeadSurveyForm() {
   const [step, setStep] = useState(0);
   const [submissionId] = useState(() => generateSubmissionId());
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -96,15 +105,12 @@ export default function IntakeForm() {
     }
   }
 
-  // Called when user clicks "Get report & book session" on the last survey step.
-  // Submits the form data (triggers assessment generation + email), then
-  // navigates to the booking/calendar step.
   async function handleSubmitAndProceed() {
     setSubmitError(null);
 
     const values = form.getValues();
-    const result = fullFormSchema.safeParse(values);
-    if (!result.success) {
+    const nameEmailResult = basicsSchema.safeParse(values);
+    if (!nameEmailResult.success) {
       setSubmitError(
         "Name and email are required. Please go back to step 1 and fill them in."
       );
@@ -114,9 +120,9 @@ export default function IntakeForm() {
     setIsSubmitting(true);
     try {
       const fd = new window.FormData();
-      fd.append("formData", JSON.stringify({ ...result.data, submissionId }));
+      fd.append("formData", JSON.stringify({ ...values, submissionId }));
 
-      const res = await fetch("/api/submit", {
+      const res = await fetch("/api/lead-survey/submit", {
         method: "POST",
         body: fd,
       });
@@ -141,7 +147,7 @@ export default function IntakeForm() {
 
   const calendarUrl = process.env.NEXT_PUBLIC_NOTION_CALENDAR_URL || "";
   const isBookingStep = step === TOTAL_STEPS - 1;
-  const isLastSurveyStep = step === TOTAL_STEPS - 2;
+  const isLastSurveyStep = step === TOTAL_STEPS - 2; // step 5 = Movement
 
   return (
     <main className="min-h-screen bg-background">
@@ -161,8 +167,8 @@ export default function IntakeForm() {
 
         <ProgressBar
           currentStep={step + 1}
-          totalSteps={8}
-          sectionName={SECTION_NAMES[step]}
+          totalSteps={6}
+          sectionName={LEAD_SECTION_NAMES[step]}
           hideCount={isBookingStep}
         />
 
@@ -172,15 +178,13 @@ export default function IntakeForm() {
       {/* Content area */}
       <div className="mx-auto max-w-lg">
         <div className="min-h-[calc(100vh-8rem)] rounded-t-3xl bg-card shadow-sm">
-          {step === 0 && <Basics form={form} />}
-          {step === 1 && <SleepSchedule form={form} />}
-          {step === 2 && <SleepQuality form={form} />}
-          {step === 3 && <Bedroom form={form} />}
-          {step === 4 && <EveningHabits form={form} />}
-          {step === 5 && <MorningHabits form={form} />}
-          {step === 6 && <FoodDrink form={form} />}
-          {step === 7 && <Movement form={form} />}
-          {step === 8 && (
+          {step === 0 && <LeadBasics form={form} />}
+          {step === 1 && <LeadSleepSchedule form={form} />}
+          {step === 2 && <LeadBedroom form={form} />}
+          {step === 3 && <LeadLightCycles form={form} />}
+          {step === 4 && <LeadFoodSupplements form={form} />}
+          {step === 5 && <LeadMovement form={form} />}
+          {step === 6 && (
             <Booking
               calendarUrl={calendarUrl}
               name={form.getValues("name")}
