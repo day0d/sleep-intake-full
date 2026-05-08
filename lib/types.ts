@@ -79,6 +79,14 @@ export interface FoodLogEntry {
 export interface SupplementEntry {
   name: string;
   dosage: string;
+  takenForSleep?: boolean;
+}
+
+export interface SleepPattern {
+  fellAsleep?: string;
+  wokeUp?: string;
+  percentage?: number;
+  efficiency?: number;
 }
 
 export interface DailySupplementEntry {
@@ -112,7 +120,7 @@ export interface FormData {
   naturalWakeTime?: string;
 
   sleepSignals: string[];
-  sleepPatterns: string[];
+  sleepPatterns: SleepPattern[];
   wakeupTypology: WakeupType[];
   wakeupOther?: string;
   lyingAwakeState: string[];

@@ -40,11 +40,17 @@ export function generateAssessment(
 ---
 
 ## Sleep Schedule
-- Typical bedtime: ${data.bedtime ?? "Not provided"}
-- Typical wake time: ${data.wakeTime ?? "Not provided"}
-- Sleep/wake variance: ${data.sleepWakeVariance ?? "Not answered"}
-- Usual sleep amount: ${data.sleepAmount ?? "Not answered"}
-- Sleep amount variance: ${data.sleepAmountVariance ?? "Not answered"}
+- Typical sleep patterns:
+${
+  data.sleepPatterns && data.sleepPatterns.length > 0
+    ? data.sleepPatterns
+        .map(
+          (p, i) =>
+            `  - Pattern ${i + 1}: fell asleep ${p.fellAsleep ?? "?"} → woke ${p.wokeUp ?? "?"} · ${p.percentage ?? "?"}% of nights · efficiency ${p.efficiency ?? "?"}/10`
+        )
+        .join("\n")
+    : "  Not provided"
+}
 - Natural bedtime (no commitments): ${data.naturalBedtime ?? "Not provided"}
 - Natural wake time (no commitments): ${data.naturalWakeTime ?? "Not provided"}
 
@@ -103,10 +109,8 @@ ${
 - Alcohol in last 3 days: ${fmtBool(data.alcoholLast3Days)}
 - Evening alcohol pattern (last 1–2 weeks): ${fmtBool(data.alcoholEveningPattern)}
 - History of low/imbalanced nutrients or biochemical markers: ${fmtBool(data.hasLowNutrientHistory)}${data.lowNutrientHistoryDetails ? ` — "${data.lowNutrientHistoryDetails}"` : ""}
-- Supplements:
-${data.supplements && data.supplements.length > 0 ? data.supplements.map((s) => `  - ${s.name}${s.dosage ? ` (${s.dosage})` : ""}`).join("\n") : "  None listed"}
-- Medications / other treatments:
-${data.medications ? data.medications.split("\n").map((l) => `  - ${l.trim()}`).filter((l) => l !== "  -").join("\n") : "  None listed"}
+- Supplements / medications:
+${data.supplements && data.supplements.length > 0 ? data.supplements.map((s) => `  - ${s.name}${s.dosage ? ` (${s.dosage})` : ""}${s.takenForSleep ? " [for sleep]" : ""}`).join("\n") : "  None listed"}
 
 ## Movement
 - Exercise types: ${fmtList(data.exerciseTypes)}

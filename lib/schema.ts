@@ -14,15 +14,26 @@ export const leadBasicsExtrasSchema = z.object({
   sleepReason: z.string().optional(),
 });
 
-// Step 2 — Sleep Schedule (all optional)
+// Step 2 — Sleep Schedule
+// Patterns describe one or more typical sleep windows. All open rows must add up to 100%.
+export const sleepPatternSchema = z.object({
+  fellAsleep: z.string().optional(),
+  wokeUp: z.string().optional(),
+  percentage: z.number().min(0).max(100).optional(),
+  efficiency: z.number().min(0).max(10).optional(),
+});
+
 export const sleepScheduleSchema = z.object({
-  bedtime: z.string().optional(),
-  bedtimeVariance: timeVariance.optional(),
-  wakeTime: z.string().optional(),
-  wakeTimeVariance: timeVariance.optional(),
-  sleepWakeVariance: variance.optional(),
-  sleepAmount: z.enum(["<5", "5-6", "6-7", "7-8", "8-9", "9+"]).optional(),
-  sleepAmountVariance: variance.optional(),
+  sleepPatterns: z
+    .array(sleepPatternSchema)
+    .default([])
+    .refine(
+      (rows) => {
+        const total = rows.reduce((sum, r) => sum + (r.percentage ?? 0), 0);
+        return rows.length === 0 || total === 100;
+      },
+      { message: "All sleep-pattern percentages must add up to 100%." }
+    ),
   naturalBedtime: z.string().optional(),
   naturalWakeTime: z.string().optional(),
 });
@@ -30,7 +41,6 @@ export const sleepScheduleSchema = z.object({
 // Step 3 — Sleep Quality
 export const sleepQualitySchema = z.object({
   sleepSignals: z.array(z.string()).default([]),
-  sleepPatterns: z.array(z.string()).default([]),
   wakeupTypology: z
     .array(
       z.enum([
@@ -146,6 +156,7 @@ export const foodDrinkSchema = z.object({
       z.object({
         name: z.string().default(""),
         dosage: z.string().default(""),
+        takenForSleep: z.boolean().optional(),
       })
     )
     .default([]),

@@ -22,28 +22,28 @@ export function generateLeadAssessment(
     day: "numeric",
   });
 
-  const dailySuppsLines =
-    data.dailySupplements && data.dailySupplements.length > 0
-      ? data.dailySupplements
+  const supplementLines =
+    data.supplements && data.supplements.length > 0
+      ? data.supplements
           .map((s) => {
             let line = "  - " + s.name + (s.dosage ? " (" + s.dosage + ")" : "");
-            if (s.magnesiumForm) line += " — form: " + s.magnesiumForm;
+            if (s.takenForSleep) line += " [taken for sleep]";
             return line;
           })
           .join("\n")
       : "  None listed";
 
-  const sleepSuppsLines =
-    data.sleepSupplements && data.sleepSupplements.length > 0
-      ? data.sleepSupplements
-          .map((s) => {
-            let line = "  - " + s.name;
-            if (s.magnesiumForm) line += " — form: " + s.magnesiumForm;
-            if (s.otherDetails) line += " — details: " + s.otherDetails;
-            return line;
-          })
+  const sleepPatternLines =
+    data.sleepPatterns && data.sleepPatterns.length > 0
+      ? data.sleepPatterns
+          .map(
+            (p, i) =>
+              "  - Pattern " + (i + 1) + ": fell asleep " + (p.fellAsleep ?? "?") +
+              " → woke " + (p.wokeUp ?? "?") + " · " + (p.percentage ?? "?") +
+              "% of nights · efficiency " + (p.efficiency ?? "?") + "/10"
+          )
           .join("\n")
-      : "  None listed";
+      : "  Not provided";
 
   const wakeupLine = fmtList(data.wakeupTypology as string[]) + (data.wakeupOther ? " — other: \"" + data.wakeupOther + "\"" : "");
 
@@ -53,7 +53,6 @@ export function generateLeadAssessment(
 "**Contact:** " + data.email + "\n" +
 "\n---\n\n" +
 "## The Basics\n" +
-"- Open to coaching: " + fmtBool(data.openToCoaching) + "\n" +
 "- Sleep motivation (why they want better sleep): " + fmt(data.sleepMotivation) + "\n" +
 "- Sleep reason (why they think they're not sleeping well): " + fmt(data.sleepReason) + "\n" +
 "- Sleep issues: " + fmtList(data.sleepSignals) + "\n" +
@@ -61,12 +60,7 @@ export function generateLeadAssessment(
 "- While lying awake: " + fmtList(data.lyingAwakeState) + "\n" +
 "\n" +
 "## Sleep Schedule\n" +
-"- Typical bedtime: " + (data.bedtime ?? "Not provided") + "\n" +
-"- Bedtime varies by: " + (data.bedtimeVariance ?? "Not answered") + "\n" +
-"- Typical wake time: " + (data.wakeTime ?? "Not provided") + "\n" +
-"- Wake time varies by: " + (data.wakeTimeVariance ?? "Not answered") + "\n" +
-"- Usual sleep amount: " + (data.sleepAmount ?? "Not answered") + "\n" +
-"- Sleep amount variance: " + (data.sleepAmountVariance ?? "Not answered") + "\n" +
+"- Typical sleep patterns:\n" + sleepPatternLines + "\n" +
 "- Natural bedtime (no commitments): " + (data.naturalBedtime ?? "Not provided") + "\n" +
 "- Natural wake time (no commitments): " + (data.naturalWakeTime ?? "Not provided") + "\n" +
 "\n" +
@@ -96,12 +90,8 @@ export function generateLeadAssessment(
 "- Caffeine sources (last 3 days): " + fmtList(data.caffeineSources) + (data.caffeineSourceOther ? " — other: \"" + data.caffeineSourceOther + "\"" : "") + (data.caffeineSources?.length > 0 ? "\n  - First caffeine (most recent day): " + (data.firstCaffeineTime ?? "N/A") + "\n  - Last caffeine (most recent day): " + (data.lastCaffeineTime ?? "N/A") : "") + "\n" +
 "- Water additions: " + fmtList(data.waterAdditions) + (data.waterAdditionOther ? " — other: \"" + data.waterAdditionOther + "\"" : "") + "\n" +
 "- History of low/imbalanced nutrients or biochemical markers: " + fmtBool(data.hasLowNutrientHistory) + (data.lowNutrientHistoryDetails ? " — \"" + data.lowNutrientHistoryDetails + "\"" : "") + "\n" +
-"- Daily supplements:\n" +
-dailySuppsLines + "\n" +
-"- Sleep supplements:\n" +
-sleepSuppsLines + "\n" +
-"- Prescription medications / other treatments:\n" +
-(data.medications ? data.medications.split("\n").map((l: string) => "  - " + l.trim()).filter((l: string) => l !== "  -").join("\n") : "  None listed") + "\n" +
+"- Supplements / medications:\n" +
+supplementLines + "\n" +
 "\n" +
 "## Movement\n" +
 "- Exercise types: " + fmtList(data.exerciseTypes) + "\n" +
