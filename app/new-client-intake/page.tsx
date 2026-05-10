@@ -158,7 +158,7 @@ export default function IntakeForm() {
     <main className="min-h-screen bg-background">
       {/* Top navigation bar */}
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-background px-4 py-3 shadow-sm">
-        {step > 0 ? (
+        {isBookingStep ? (
           <button
             type="button"
             onClick={handleBack}

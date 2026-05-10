@@ -27,13 +27,16 @@ export const sleepScheduleSchema = z.object({
   sleepPatterns: z
     .array(sleepPatternSchema)
     .default([])
-    .refine(
-      (rows) => {
-        const total = rows.reduce((sum, r) => sum + (r.percentage ?? 0), 0);
-        return rows.length === 0 || total === 100;
-      },
-      { message: "All sleep-pattern percentages must add up to 100%." }
-    ),
+    .superRefine((rows, ctx) => {
+      if (rows.length === 0) return;
+      const total = rows.reduce((sum, r) => sum + (r.percentage ?? 0), 0);
+      if (total !== 100) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Your sleep patterns add up to ${total}%. Make them add up to 100%.`,
+        });
+      }
+    }),
   naturalBedtime: z.string().optional(),
   naturalWakeTime: z.string().optional(),
 });
