@@ -97,9 +97,6 @@ export function Basics({ form }: BasicsProps) {
       <h1 className="text-center text-2xl font-bold text-foreground">
         Let&apos;s start with the basics
       </h1>
-      <p className="mt-2 text-center text-sm text-muted-foreground">
-        So I know who I&apos;m talking to.
-      </p>
 
       <div className="mt-6 w-full max-w-sm rounded-2xl border border-border bg-muted/30 px-4 py-4 text-sm text-muted-foreground space-y-1.5">
         <p>
