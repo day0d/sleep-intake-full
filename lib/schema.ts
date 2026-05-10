@@ -105,6 +105,9 @@ export const eveningHabitsSchema = z.object({
   eveningDeviceScreen: z.array(z.string()).default([]),
   eveningScreenTypes: z.array(z.string()).default([]),
   eveningScreenDimmers: z.array(z.string()).default([]),
+  eveningScreenApps: z.record(z.string(), z.string()).default({}),
+  eveningScreenAppsValue: z.record(z.string(), z.string()).default({}),
+  eveningScreenOtherApps: z.string().optional(),
 });
 
 // Step 6 — Morning Habits
@@ -117,12 +120,21 @@ export const morningHabitsSchema = z.object({
     .enum(["<2m", "3-5m", "5-10m", "10-15m", "15+m"])
     .optional(),
   amSunVariance: variance.optional(),
+  amSunYesterday: z.number().optional(),
+  amSunDaysLastWeek: z.number().min(0).max(7).optional(),
+  amSunOtherDaysDelay: z.number().optional(),
   amPhoneWindow: z
     .enum(["in_bed", "within_15m", "30m-1h", "after_breakfast", "later"])
     .optional(),
+  amPhoneYesterday: z.number().optional(),
+  amPhoneApps: z.string().optional(),
+  amPhonePctMornings: z.number().min(0).max(100).optional(),
   firstSocialWindow: z
     .enum(["<15m", "15-30m", "30-60m", "1-2h", "2-4h", "4h+", "varies"])
     .optional(),
+  firstSocialYesterday: z.number().optional(),
+  firstSocialDaysLastWeek: z.number().min(0).max(7).optional(),
+  firstSocialOtherDaysDelay: z.number().optional(),
 });
 
 // Step 7 — Food & Drink
@@ -141,6 +153,8 @@ export const foodDrinkSchema = z.object({
   firstMealContent: z.string().optional(),
   lastMealTime: z.string().optional(),
   lastMealContent: z.string().optional(),
+  mealTimingReflectivityScore: z.number().min(0).max(10).optional(),
+  mealTimingReflectivityNotes: z.string().optional(),
   caffeineSources: z.array(z.string()).default([]),
   caffeineSourceOther: z.string().optional(),
   firstCaffeineTime: z.string().optional(),
@@ -192,6 +206,8 @@ export const movementSchema = z.object({
     .default([]),
   exerciseTimingVariance: variance.optional(),
   exerciseRecoverySymptoms: z.array(z.string()).default([]),
+  exerciseReflectivityScore: z.number().min(0).max(10).optional(),
+  exerciseReflectivityNotes: z.string().optional(),
 });
 
 export const fullFormSchema = basicsSchema

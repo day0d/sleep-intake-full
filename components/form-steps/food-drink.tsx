@@ -7,8 +7,10 @@ import { FormData } from "@/lib/types";
 import { pillStyles } from "@/lib/ui-styles";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { TimePicker } from "@/components/ui/time-picker";
 import { SupplementSection } from "@/components/ui/supplement-section";
+import { ScorePicker } from "@/components/ui/score-picker";
 
 interface FoodDrinkProps {
   form: UseFormReturn<FormData>;
@@ -182,6 +184,30 @@ export function FoodDrink({ form }: FoodDrinkProps) {
                     className="bg-background"
                   />
                 </div>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <Label className="text-sm font-medium">
+                How reflective is this of a typical day of eating in the past 1–2 weeks?
+              </Label>
+              <p className="mt-1 text-xs text-muted-foreground">
+                0 = nothing like usual · 10 = exactly like a typical day
+              </p>
+              <div className="mt-3">
+                <ScorePicker
+                  value={watch("mealTimingReflectivityScore")}
+                  onChange={(v) =>
+                    setValue("mealTimingReflectivityScore", v, { shouldDirty: true })
+                  }
+                />
+              </div>
+              <div className="mt-3">
+                <Textarea
+                  rows={3}
+                  placeholder="Anything different about yesterday vs. a typical day? Any pattern of variation in the last 1–2 weeks?"
+                  {...register("mealTimingReflectivityNotes")}
+                />
               </div>
             </div>
           </div>

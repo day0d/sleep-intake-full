@@ -4,7 +4,9 @@ import { UseFormReturn } from "react-hook-form";
 import { FormData, ExerciseFrequency, ExerciseTiming } from "@/lib/types";
 import { cardStyles, pillStyles } from "@/lib/ui-styles";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { PillRow } from "@/components/ui/pill-row";
+import { ScorePicker } from "@/components/ui/score-picker";
 
 interface LeadMovementProps {
   form: UseFormReturn<FormData>;
@@ -49,12 +51,13 @@ const RECOVERY_SYMPTOMS = [
 ];
 
 export function LeadMovement({ form }: LeadMovementProps) {
-  const { setValue, watch } = form;
+  const { register, setValue, watch } = form;
 
   const exerciseTypes = watch("exerciseTypes") || [];
   const exerciseFrequency = watch("exerciseFrequency");
   const exerciseTiming = watch("exerciseTiming") || [];
   const exerciseRecoverySymptoms = watch("exerciseRecoverySymptoms") || [];
+  const reflectivityScore = watch("exerciseReflectivityScore");
 
   function toggleType(id: string) {
     const next = exerciseTypes.includes(id)
@@ -108,7 +111,9 @@ export function LeadMovement({ form }: LeadMovementProps) {
         </div>
 
         <div>
-          <Label className="text-sm font-medium">How many days per week?</Label>
+          <Label className="text-sm font-medium">
+            How many days last week did you exercise?
+          </Label>
           <div className="mt-3">
             <PillRow
               options={FREQUENCY_OPTIONS}
@@ -123,7 +128,9 @@ export function LeadMovement({ form }: LeadMovementProps) {
         </div>
 
         <div>
-          <Label className="text-sm font-medium">When do you usually exercise?</Label>
+          <Label className="text-sm font-medium">
+            When did you exercise last week?
+          </Label>
           <p className="mt-1 text-xs text-muted-foreground">Select all that apply.</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {TIMING_OPTIONS.map((t) => {
@@ -146,7 +153,31 @@ export function LeadMovement({ form }: LeadMovementProps) {
 
         <div>
           <Label className="text-sm font-medium">
-            Any of these exercise recovery symptoms?
+            How reflective was last week of the previous 3–4 weeks?
+          </Label>
+          <p className="mt-1 text-xs text-muted-foreground">
+            0 = nothing like usual · 10 = exactly like a typical week
+          </p>
+          <div className="mt-3">
+            <ScorePicker
+              value={reflectivityScore}
+              onChange={(v) =>
+                setValue("exerciseReflectivityScore", v, { shouldDirty: true })
+              }
+            />
+          </div>
+          <div className="mt-3">
+            <Textarea
+              rows={3}
+              placeholder="Anything different about last week vs. a typical week? Any pattern of variation in the past month?"
+              {...register("exerciseReflectivityNotes")}
+            />
+          </div>
+        </div>
+
+        <div>
+          <Label className="text-sm font-medium">
+            Have you experienced any of these recovery symptoms recently?
           </Label>
           <p className="mt-1 text-xs text-muted-foreground">Select all that apply.</p>
           <div className="mt-3 flex flex-wrap gap-2">

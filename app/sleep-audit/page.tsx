@@ -86,6 +86,10 @@ export default function LeadSurveyForm() {
         const field = err.path.join(".") as keyof FormData;
         form.setError(field, { message: err.message });
       });
+      const fields = new Set(result.error.issues.map((i) => i.path[0]));
+      if (fields.has("name") && fields.has("email")) {
+        return "Name and email are required.";
+      }
       return result.error.issues[0]?.message || "Please complete all required fields.";
     }
     return null;

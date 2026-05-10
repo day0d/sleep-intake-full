@@ -1,17 +1,15 @@
 "use client";
 
 import { UseFormReturn } from "react-hook-form";
-import { FormData, AmSunExposure, AmSunDuration, Variance } from "@/lib/types";
+import { FormData } from "@/lib/types";
 import { cardStyles, pillStyles } from "@/lib/ui-styles";
 import { Label } from "@/components/ui/label";
-import { PillRow } from "@/components/ui/pill-row";
-import { VariancePills } from "@/components/ui/variance-pills";
+import { EveningScreensSection } from "@/components/ui/evening-screens-section";
+import { SunExposureSection } from "@/components/ui/sun-exposure-section";
 
 interface LeadLightCyclesProps {
   form: UseFormReturn<FormData>;
 }
-
-// ── Evening lighting data (from full intake evening-habits) ──────────
 
 const LIGHT_LOCATION = [
   { id: "ceiling_overhead", label: "Ceiling / Overhead" },
@@ -31,34 +29,6 @@ const LIGHT_INTENSITY: { id: string; label: string; sub: string }[] = [
   { id: "read_squint", label: "Could read, but may need to squint", sub: "Dim — manageable but not easy" },
   { id: "move_only", label: "Cannot read fine print", sub: "Low light — move around but not read" },
 ];
-
-const SCREEN_DEVICES = [
-  { id: "phone", label: "Phone" },
-  { id: "tv", label: "TV" },
-  { id: "laptop", label: "Laptop" },
-  { id: "tablet", label: "Tablet" },
-];
-
-// ── Morning sun data (from full intake morning-habits) ───────────────
-
-const SUN_EXPOSURE_OPTIONS: { id: AmSunExposure; label: string }[] = [
-  { id: "none", label: "I don't" },
-  { id: "<15m", label: "<15m" },
-  { id: "15-30m", label: "15–30m" },
-  { id: "30-60m", label: "30–60m" },
-  { id: "1-2h", label: "1–2h" },
-  { id: "later", label: "Later in day" },
-];
-
-const SUN_DURATION_OPTIONS: { id: AmSunDuration; label: string }[] = [
-  { id: "<2m", label: "<2m" },
-  { id: "3-5m", label: "3–5m" },
-  { id: "5-10m", label: "5–10m" },
-  { id: "10-15m", label: "10–15m" },
-  { id: "15+m", label: "15+m" },
-];
-
-// ── SVG Icons ────────────────────────────────────────────────────────
 
 function IntensityIcon({ id }: { id: string }) {
   const stroke = "currentColor";
@@ -113,60 +83,12 @@ function IntensityIcon({ id }: { id: string }) {
   );
 }
 
-function ScreenIcon({ device }: { device: string }) {
-  const stroke = "currentColor";
-  const sw = 1.5;
-  if (device === "phone") {
-    return (
-      <svg width="28" height="36" viewBox="0 0 28 36" fill="none" className="text-foreground">
-        <rect x="3" y="2" width="22" height="32" rx="4" stroke={stroke} strokeWidth={sw} />
-        <circle cx="14" cy="30" r="1.5" stroke={stroke} strokeWidth={sw * 0.8} />
-        <line x1="10" y1="5" x2="18" y2="5" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
-      </svg>
-    );
-  }
-  if (device === "tv") {
-    return (
-      <svg width="40" height="32" viewBox="0 0 40 32" fill="none" className="text-foreground">
-        <rect x="2" y="2" width="36" height="22" rx="3" stroke={stroke} strokeWidth={sw} />
-        <line x1="20" y1="24" x2="20" y2="30" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
-        <line x1="12" y1="30" x2="28" y2="30" stroke={stroke} strokeWidth={sw + 0.5} strokeLinecap="round" />
-        <rect x="5" y="5" width="30" height="16" rx="1" fill={stroke} fillOpacity="0.08" />
-      </svg>
-    );
-  }
-  if (device === "laptop") {
-    return (
-      <svg width="40" height="32" viewBox="0 0 40 32" fill="none" className="text-foreground">
-        <rect x="6" y="3" width="28" height="19" rx="2" stroke={stroke} strokeWidth={sw} />
-        <rect x="8" y="5" width="24" height="15" rx="1" fill={stroke} fillOpacity="0.08" />
-        <path d="M2 22 L38 22 L36 29 L4 29 Z" stroke={stroke} strokeWidth={sw} fill="none" strokeLinejoin="round" />
-        <line x1="16" y1="26" x2="24" y2="26" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
-      </svg>
-    );
-  }
-  return (
-    <svg width="28" height="36" viewBox="0 0 28 36" fill="none" className="text-foreground">
-      <rect x="2" y="2" width="24" height="32" rx="3" stroke={stroke} strokeWidth={sw} />
-      <rect x="5" y="5" width="18" height="22" rx="1" fill={stroke} fillOpacity="0.08" />
-      <circle cx="14" cy="31" r="1.5" stroke={stroke} strokeWidth={sw * 0.8} />
-    </svg>
-  );
-}
-
 export function LeadLightCycles({ form }: LeadLightCyclesProps) {
   const { setValue, watch } = form;
 
   const eveningLightLocation = watch("eveningLightLocation") || [];
   const eveningLightTone = watch("eveningLightTone") || [];
   const eveningLightIntensity = watch("eveningLightIntensity");
-  const eveningScreenTypes = watch("eveningScreenTypes") || [];
-  const eveningScreenDimmers = watch("eveningScreenDimmers") || [];
-  const amSunExposure = watch("amSunExposure");
-  const amSunDuration = watch("amSunDuration");
-  const amSunVariance = watch("amSunVariance");
-
-  const hasSunlight = amSunExposure && amSunExposure !== "none";
 
   function toggleMulti(
     field: "eveningLightLocation" | "eveningLightTone",
@@ -179,27 +101,6 @@ export function LeadLightCycles({ form }: LeadLightCyclesProps) {
     setValue(field, next, { shouldDirty: true });
   }
 
-  function toggleScreenType(id: string) {
-    const next = eveningScreenTypes.includes(id)
-      ? eveningScreenTypes.filter((s) => s !== id)
-      : [...eveningScreenTypes, id];
-    setValue("eveningScreenTypes", next, { shouldDirty: true });
-    if (eveningScreenTypes.includes(id)) {
-      setValue(
-        "eveningScreenDimmers",
-        eveningScreenDimmers.filter((d) => d !== id),
-        { shouldDirty: true }
-      );
-    }
-  }
-
-  function toggleDimmer(id: string) {
-    const next = eveningScreenDimmers.includes(id)
-      ? eveningScreenDimmers.filter((d) => d !== id)
-      : [...eveningScreenDimmers, id];
-    setValue("eveningScreenDimmers", next, { shouldDirty: true });
-  }
-
   return (
     <div className="px-6 py-8">
       <h1 className="text-center text-2xl font-bold text-foreground">Light cycles</h1>
@@ -208,8 +109,7 @@ export function LeadLightCycles({ form }: LeadLightCyclesProps) {
       </p>
 
       <div className="mt-8 space-y-8">
-
-        {/* ── Evening Lighting ── */}
+        {/* Evening Lighting */}
         <div>
           <Label className="text-sm font-medium">
             Evening lighting environment (especially 2 hrs before bed)
@@ -219,7 +119,6 @@ export function LeadLightCycles({ form }: LeadLightCyclesProps) {
           </p>
 
           <div className="mt-4 rounded-2xl border border-border bg-muted/20 p-4 space-y-5">
-
             {/* Type of lighting */}
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -324,109 +223,12 @@ export function LeadLightCycles({ form }: LeadLightCyclesProps) {
             </div>
 
             {/* Device screens */}
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Screens used in the evening
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">Select all that apply.</p>
-              <div className="mt-2 grid grid-cols-2 gap-3">
-                {SCREEN_DEVICES.map((d) => {
-                  const selected = eveningScreenTypes.includes(d.id);
-                  return (
-                    <button
-                      key={d.id}
-                      type="button"
-                      onClick={() => toggleScreenType(d.id)}
-                      className={`flex flex-col items-center gap-2 rounded-2xl border-2 px-3 py-4 text-center transition-colors ${
-                        selected ? cardStyles.selected : cardStyles.unselected
-                      }`}
-                    >
-                      <ScreenIcon device={d.id} />
-                      <span className="text-xs font-medium leading-tight">{d.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {eveningScreenTypes.length > 0 && (
-                <div className="mt-4 animate-in slide-in-from-top-2 duration-200">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Which have night mode / dimmer on?
-                  </p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {eveningScreenTypes.map((id) => {
-                      const label = SCREEN_DEVICES.find((d) => d.id === id)?.label ?? id;
-                      const selected = eveningScreenDimmers.includes(id);
-                      return (
-                        <button
-                          key={id}
-                          type="button"
-                          onClick={() => toggleDimmer(id)}
-                          className={`rounded-full border-2 px-4 py-2 text-sm font-medium transition-colors ${
-                            selected ? pillStyles.selected : pillStyles.unselected
-                          }`}
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
+            <EveningScreensSection form={form} />
           </div>
         </div>
 
-        {/* ── Morning Sun ── */}
-        <div>
-          <Label className="text-sm font-medium">
-            How soon after waking do you get direct sunlight?
-          </Label>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Direct sunlight = actual sun contact on your skin — outside or by an open window.
-            Counts even on cloudy days; indoor light through glass does not count.
-          </p>
-          <div className="mt-3">
-            <PillRow
-              options={SUN_EXPOSURE_OPTIONS}
-              value={amSunExposure}
-              onChange={(v) =>
-                setValue("amSunExposure", v as AmSunExposure | undefined, { shouldDirty: true })
-              }
-            />
-          </div>
-
-          {hasSunlight && (
-            <>
-              <div className="mt-4 animate-in slide-in-from-top-2 duration-200">
-                <Label className="text-sm font-medium">
-                  How long do you get that direct sunlight?
-                </Label>
-                <div className="mt-3">
-                  <PillRow
-                    options={SUN_DURATION_OPTIONS}
-                    value={amSunDuration}
-                    onChange={(v) =>
-                      setValue("amSunDuration", v as AmSunDuration | undefined, { shouldDirty: true })
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className="mt-4 animate-in slide-in-from-top-2 duration-200">
-                <Label className="text-sm font-medium">How consistent is that timing?</Label>
-                <div className="mt-3">
-                  <VariancePills
-                    value={amSunVariance}
-                    onChange={(v) =>
-                      setValue("amSunVariance", v as Variance | undefined, { shouldDirty: true })
-                    }
-                  />
-                </div>
-              </div>
-            </>
-          )}
-        </div>
+        {/* Morning Sun */}
+        <SunExposureSection form={form} />
       </div>
     </div>
   );

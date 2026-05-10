@@ -18,8 +18,128 @@ function clampNum(val: string, min: number, max: number): number | undefined {
   return Math.min(max, Math.max(min, n));
 }
 
+interface PatternRowProps {
+  index: number;
+  isFirst: boolean;
+  showRemove: boolean;
+  form: UseFormReturn<FormData>;
+  onRemove: () => void;
+}
+
+function PatternRow({
+  index,
+  isFirst,
+  showRemove,
+  form,
+  onRemove,
+}: PatternRowProps) {
+  const { watch, setValue, register } = form;
+
+  return (
+    <div className="relative rounded-2xl border bg-card px-4 py-4 pr-10">
+      {showRemove && (
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label="Remove row"
+          className="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      )}
+
+      {isFirst ? (
+        <p className="mb-3 text-sm font-semibold text-foreground">
+          What time did you fall asleep and get out of bed last night?
+        </p>
+      ) : (
+        <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Pattern {index + 1}
+        </p>
+      )}
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label className="text-xs text-muted-foreground">Fell asleep</Label>
+          <div className="mt-1">
+            <TimePicker
+              value={watch(`sleepPatterns.${index}.fellAsleep` as const)}
+              onChange={(v) =>
+                setValue(`sleepPatterns.${index}.fellAsleep`, v, {
+                  shouldDirty: true,
+                })
+              }
+            />
+          </div>
+        </div>
+
+        <div>
+          <Label className="text-xs text-muted-foreground">Got out of bed</Label>
+          <div className="mt-1">
+            <TimePicker
+              value={watch(`sleepPatterns.${index}.wokeUp` as const)}
+              onChange={(v) =>
+                setValue(`sleepPatterns.${index}.wokeUp`, v, {
+                  shouldDirty: true,
+                })
+              }
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-3 space-y-3">
+        <div>
+          <Label className="text-xs text-muted-foreground">
+            Sleep efficiency
+          </Label>
+          <div className="mt-1">
+            <input
+              type="number"
+              inputMode="numeric"
+              min={0}
+              max={10}
+              placeholder="0–10"
+              {...register(`sleepPatterns.${index}.efficiency` as const, {
+                setValueAs: (v) => clampNum(String(v ?? ""), 0, 10),
+              })}
+              className="h-12 w-full rounded-xl border bg-background px-3 text-base focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              * 0 = lay awake all night · 10 = didn&apos;t wake once
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <Label className="text-xs text-muted-foreground">% calibration</Label>
+          <div className="relative mt-1">
+            <input
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={100}
+              placeholder="e.g., 70"
+              {...register(`sleepPatterns.${index}.percentage` as const, {
+                setValueAs: (v) => clampNum(String(v ?? ""), 1, 100),
+              })}
+              className="h-12 w-full rounded-xl border bg-background px-3 pr-8 text-base focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+              %
+            </span>
+          </div>
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            * What % of nights look like this pattern
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function SleepSchedule({ form }: SleepScheduleProps) {
-  const { setValue, watch, control, register } = form;
+  const { setValue, watch, control } = form;
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -49,114 +169,33 @@ export function SleepSchedule({ form }: SleepScheduleProps) {
       <h1 className="text-center text-2xl font-bold text-foreground">
         Your sleep schedule
       </h1>
-      <p className="mt-2 text-center text-sm text-muted-foreground">
-        Describe your typical sleep patterns. All rows must add up to 100%.
-      </p>
-
-      <div className="mt-6 rounded-xl bg-muted/30 px-4 py-3 text-xs text-muted-foreground">
-        <p className="font-medium text-foreground">How to fill this out</p>
-        <p className="mt-1">
-          For row 1, use last night&apos;s actual fall-asleep and wake-up times. Then estimate what % of nights look like that. Add another row for any other typical pattern (use the leftover %). Keep adding rows until your % adds up to 100.
-        </p>
-      </div>
 
       <div className="mt-6 space-y-4">
         {fields.map((field, index) => (
-          <div
-            key={field.id}
-            className="relative rounded-2xl border bg-card px-4 py-4 pr-10"
-          >
-            {fields.length > 1 && (
-              <button
-                type="button"
-                onClick={() => remove(index)}
-                aria-label="Remove row"
-                className="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-              >
-                <X className="h-4 w-4" />
-              </button>
+          <div key={field.id}>
+            <PatternRow
+              index={index}
+              isFirst={index === 0}
+              showRemove={fields.length > 1}
+              form={form}
+              onRemove={() => remove(index)}
+            />
+            {index === 0 && fields.length > 1 && (
+              <div className="my-4 rounded-xl bg-muted/30 px-4 py-3 text-xs text-muted-foreground">
+                Add additional rows for any other typical sleep patterns (use
+                the leftover %). Keep adding patterns until your % adds up to
+                100.
+              </div>
             )}
-
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              {index === 0 ? "Last night" : `Pattern ${index + 1}`}
-            </p>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs text-muted-foreground">Fell asleep</Label>
-                <div className="mt-1">
-                  <TimePicker
-                    value={watch(`sleepPatterns.${index}.fellAsleep` as const)}
-                    onChange={(v) =>
-                      setValue(`sleepPatterns.${index}.fellAsleep`, v, {
-                        shouldDirty: true,
-                      })
-                    }
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-xs text-muted-foreground">Woke up</Label>
-                <div className="mt-1">
-                  <TimePicker
-                    value={watch(`sleepPatterns.${index}.wokeUp` as const)}
-                    onChange={(v) =>
-                      setValue(`sleepPatterns.${index}.wokeUp`, v, {
-                        shouldDirty: true,
-                      })
-                    }
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-xs text-muted-foreground">
-                  % of typical
-                </Label>
-                <div className="relative mt-1">
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    min={1}
-                    max={100}
-                    placeholder="e.g., 70"
-                    {...register(`sleepPatterns.${index}.percentage` as const, {
-                      setValueAs: (v) => clampNum(String(v ?? ""), 1, 100),
-                    })}
-                    className="h-12 w-full rounded-xl border bg-background px-3 pr-8 text-base focus:outline-none focus:ring-2 focus:ring-ring"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                    %
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-xs text-muted-foreground">
-                  Efficiency (0–10)
-                </Label>
-                <div className="mt-1">
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    min={0}
-                    max={10}
-                    placeholder="0–10"
-                    {...register(`sleepPatterns.${index}.efficiency` as const, {
-                      setValueAs: (v) => clampNum(String(v ?? ""), 0, 10),
-                    })}
-                    className="h-12 w-full rounded-xl border bg-background px-3 text-base focus:outline-none focus:ring-2 focus:ring-ring"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <p className="mt-2 text-[11px] text-muted-foreground">
-              Efficiency: 0 = lay awake all night · 10 = didn&apos;t wake once.
-            </p>
           </div>
         ))}
+
+        {fields.length === 1 && (
+          <div className="rounded-xl bg-muted/30 px-4 py-3 text-xs text-muted-foreground">
+            Add additional rows for any other typical sleep patterns (use the
+            leftover %). Keep adding patterns until your % adds up to 100.
+          </div>
+        )}
 
         <div className="flex items-center justify-between">
           <button

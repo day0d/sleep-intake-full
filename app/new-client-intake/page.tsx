@@ -10,7 +10,6 @@ import { generateSubmissionId } from "@/lib/compress";
 import { ProgressBar, SECTION_NAMES } from "@/components/progress-bar";
 import { Basics } from "@/components/form-steps/basics";
 import { SleepSchedule } from "@/components/form-steps/sleep-schedule";
-import { SleepQuality } from "@/components/form-steps/sleep-quality";
 import { Bedroom } from "@/components/form-steps/bedroom";
 import { EveningHabits } from "@/components/form-steps/evening-habits";
 import { MorningHabits } from "@/components/form-steps/morning-habits";
@@ -18,12 +17,12 @@ import { FoodDrink } from "@/components/form-steps/food-drink";
 import { Movement } from "@/components/form-steps/movement";
 import { Booking } from "@/components/form-steps/booking";
 
-const TOTAL_STEPS = 9;
+const TOTAL_STEPS = 8;
 
 const STEP_SCHEMAS = [
   basicsSchema, // 0: name + email required
   sleepScheduleSchema, // 1: sleep patterns must total 100%
-  null, null, null, null, null, null, null,
+  null, null, null, null, null, null,
 ];
 
 export default function IntakeForm() {
@@ -77,6 +76,10 @@ export default function IntakeForm() {
         const field = err.path.join(".") as keyof FormData;
         form.setError(field, { message: err.message });
       });
+      const fields = new Set(result.error.issues.map((i) => i.path[0]));
+      if (fields.has("name") && fields.has("email")) {
+        return "Name and email are required.";
+      }
       return result.error.issues[0]?.message || "Please complete all required fields.";
     }
     return null;
@@ -169,7 +172,7 @@ export default function IntakeForm() {
 
         <ProgressBar
           currentStep={step + 1}
-          totalSteps={8}
+          totalSteps={7}
           sectionName={SECTION_NAMES[step]}
           hideCount={isBookingStep}
         />
@@ -182,13 +185,12 @@ export default function IntakeForm() {
         <div className="min-h-[calc(100vh-8rem)] rounded-t-3xl bg-card shadow-sm">
           {step === 0 && <Basics form={form} />}
           {step === 1 && <SleepSchedule form={form} />}
-          {step === 2 && <SleepQuality form={form} />}
-          {step === 3 && <Bedroom form={form} />}
-          {step === 4 && <EveningHabits form={form} />}
-          {step === 5 && <MorningHabits form={form} />}
-          {step === 6 && <FoodDrink form={form} />}
-          {step === 7 && <Movement form={form} />}
-          {step === 8 && (
+          {step === 2 && <Bedroom form={form} />}
+          {step === 3 && <EveningHabits form={form} />}
+          {step === 4 && <MorningHabits form={form} />}
+          {step === 5 && <FoodDrink form={form} />}
+          {step === 6 && <Movement form={form} />}
+          {step === 7 && (
             <Booking
               calendarUrl={calendarUrl}
               name={form.getValues("name")}

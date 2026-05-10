@@ -157,19 +157,33 @@ export interface FormData {
   eveningDeviceScreen: string[];
   eveningScreenTypes: string[];
   eveningScreenDimmers: string[];
+  eveningScreenApps?: Record<string, string>;
+  eveningScreenAppsValue?: Record<string, string>;
+  eveningScreenOtherApps?: string;
 
   amRoutine?: string;
   amSunExposure?: AmSunExposure;
   amSunDuration?: AmSunDuration;
   amSunVariance?: Variance;
+  amSunYesterday?: number;
+  amSunDaysLastWeek?: number;
+  amSunOtherDaysDelay?: number;
   amPhoneWindow?: AmPhoneWindow;
+  amPhoneYesterday?: number;
+  amPhoneApps?: string;
+  amPhonePctMornings?: number;
   firstSocialWindow?: FirstSocialWindow;
+  firstSocialYesterday?: number;
+  firstSocialDaysLastWeek?: number;
+  firstSocialOtherDaysDelay?: number;
 
   foodLog: FoodLogEntry[];
   firstMealTime?: string;
   firstMealContent?: string;
   lastMealTime?: string;
   lastMealContent?: string;
+  mealTimingReflectivityScore?: number;
+  mealTimingReflectivityNotes?: string;
   caffeineSources: string[];
   caffeineSourceOther?: string;
   firstCaffeineTime?: string;
@@ -191,4 +205,6 @@ export interface FormData {
   exerciseTiming: ExerciseTiming[];
   exerciseTimingVariance?: Variance;
   exerciseRecoverySymptoms: string[];
+  exerciseReflectivityScore?: number;
+  exerciseReflectivityNotes?: string;
 }
