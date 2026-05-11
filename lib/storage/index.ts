@@ -8,6 +8,8 @@ export {
   buildAssessmentFileName,
   buildLeadSurveyFolderName,
   buildLeadSurveyAssessmentFileName,
+  buildEnvAuditFolderName,
+  buildEnvAuditAssessmentFileName,
 } from "./types";
 
 let cachedAdapter: StorageAdapter | null = null;
