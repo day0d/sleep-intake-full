@@ -77,3 +77,20 @@ export function buildLeadSurveyAssessmentFileName(name: string, date: Date): str
   const uid = date.getTime();
   return slug + "_lead-survey-results_" + dateStr + "_" + uid + ".md";
 }
+
+// ── Environmental Audit Intake naming ────────────────────────────────
+
+/** Build the env audit folder name: "2026-04-18 - John Doe - Env Audit Intake - 1745612345678" */
+export function buildEnvAuditFolderName(name: string, date: Date): string {
+  const dateStr = date.toISOString().split("T")[0];
+  const uid = date.getTime();
+  return dateStr + " - " + name.trim() + " - Env Audit Intake - " + uid;
+}
+
+/** Build the env audit assessment file name: "John-Doe_env-audit-results_2026-04-18_1745612345678.md" */
+export function buildEnvAuditAssessmentFileName(name: string, date: Date): string {
+  const slug = slugifyName(name);
+  const dateStr = date.toISOString().split("T")[0];
+  const uid = date.getTime();
+  return slug + "_env-audit-results_" + dateStr + "_" + uid + ".md";
+}
