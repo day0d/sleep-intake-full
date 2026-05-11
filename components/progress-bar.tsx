@@ -8,7 +8,6 @@ interface ProgressBarProps {
 const SECTION_NAMES = [
   "The Basics",
   "Sleep Schedule",
-  "Sleep Quality",
   "Your Bedroom",
   "Evening Habits",
   "Morning Habits",

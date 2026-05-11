@@ -14,15 +14,29 @@ export const leadBasicsExtrasSchema = z.object({
   sleepReason: z.string().optional(),
 });
 
-// Step 2 — Sleep Schedule (all optional)
+// Step 2 — Sleep Schedule
+// Patterns describe one or more typical sleep windows. All open rows must add up to 100%.
+export const sleepPatternSchema = z.object({
+  fellAsleep: z.string().optional(),
+  wokeUp: z.string().optional(),
+  percentage: z.number().min(0).max(100).optional(),
+  efficiency: z.number().min(0).max(10).optional(),
+});
+
 export const sleepScheduleSchema = z.object({
-  bedtime: z.string().optional(),
-  bedtimeVariance: timeVariance.optional(),
-  wakeTime: z.string().optional(),
-  wakeTimeVariance: timeVariance.optional(),
-  sleepWakeVariance: variance.optional(),
-  sleepAmount: z.enum(["<5", "5-6", "6-7", "7-8", "8-9", "9+"]).optional(),
-  sleepAmountVariance: variance.optional(),
+  sleepPatterns: z
+    .array(sleepPatternSchema)
+    .default([])
+    .superRefine((rows, ctx) => {
+      if (rows.length === 0) return;
+      const total = rows.reduce((sum, r) => sum + (r.percentage ?? 0), 0);
+      if (total !== 100) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Your sleep patterns add up to ${total}%. Make them add up to 100%.`,
+        });
+      }
+    }),
   naturalBedtime: z.string().optional(),
   naturalWakeTime: z.string().optional(),
 });
@@ -30,7 +44,6 @@ export const sleepScheduleSchema = z.object({
 // Step 3 — Sleep Quality
 export const sleepQualitySchema = z.object({
   sleepSignals: z.array(z.string()).default([]),
-  sleepPatterns: z.array(z.string()).default([]),
   wakeupTypology: z
     .array(
       z.enum([
@@ -95,6 +108,9 @@ export const eveningHabitsSchema = z.object({
   eveningDeviceScreen: z.array(z.string()).default([]),
   eveningScreenTypes: z.array(z.string()).default([]),
   eveningScreenDimmers: z.array(z.string()).default([]),
+  eveningScreenApps: z.record(z.string(), z.string()).default({}),
+  eveningScreenAppsValue: z.record(z.string(), z.string()).default({}),
+  eveningScreenOtherApps: z.string().optional(),
 });
 
 // Step 6 — Morning Habits
@@ -107,12 +123,21 @@ export const morningHabitsSchema = z.object({
     .enum(["<2m", "3-5m", "5-10m", "10-15m", "15+m"])
     .optional(),
   amSunVariance: variance.optional(),
+  amSunYesterday: z.number().optional(),
+  amSunDaysLastWeek: z.number().min(0).max(7).optional(),
+  amSunOtherDaysDelay: z.number().optional(),
   amPhoneWindow: z
     .enum(["in_bed", "within_15m", "30m-1h", "after_breakfast", "later"])
     .optional(),
+  amPhoneYesterday: z.number().optional(),
+  amPhoneApps: z.string().optional(),
+  amPhonePctMornings: z.number().min(0).max(100).optional(),
   firstSocialWindow: z
     .enum(["<15m", "15-30m", "30-60m", "1-2h", "2-4h", "4h+", "varies"])
     .optional(),
+  firstSocialYesterday: z.number().optional(),
+  firstSocialDaysLastWeek: z.number().min(0).max(7).optional(),
+  firstSocialOtherDaysDelay: z.number().optional(),
 });
 
 // Step 7 — Food & Drink
@@ -131,6 +156,8 @@ export const foodDrinkSchema = z.object({
   firstMealContent: z.string().optional(),
   lastMealTime: z.string().optional(),
   lastMealContent: z.string().optional(),
+  mealTimingReflectivityScore: z.number().min(0).max(10).optional(),
+  mealTimingReflectivityNotes: z.string().optional(),
   caffeineSources: z.array(z.string()).default([]),
   caffeineSourceOther: z.string().optional(),
   firstCaffeineTime: z.string().optional(),
@@ -146,6 +173,7 @@ export const foodDrinkSchema = z.object({
       z.object({
         name: z.string().default(""),
         dosage: z.string().default(""),
+        takenForSleep: z.boolean().optional(),
       })
     )
     .default([]),
@@ -181,6 +209,8 @@ export const movementSchema = z.object({
     .default([]),
   exerciseTimingVariance: variance.optional(),
   exerciseRecoverySymptoms: z.array(z.string()).default([]),
+  exerciseReflectivityScore: z.number().min(0).max(10).optional(),
+  exerciseReflectivityNotes: z.string().optional(),
 });
 
 export const fullFormSchema = basicsSchema

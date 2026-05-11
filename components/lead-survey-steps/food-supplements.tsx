@@ -5,8 +5,10 @@ import { FormData } from "@/lib/types";
 import { pillStyles } from "@/lib/ui-styles";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { TimePicker } from "@/components/ui/time-picker";
 import { Textarea } from "@/components/ui/textarea";
+import { TimePicker } from "@/components/ui/time-picker";
+import { SupplementSection } from "@/components/ui/supplement-section";
+import { ScorePicker } from "@/components/ui/score-picker";
 
 interface LeadFoodSupplementsProps {
   form: UseFormReturn<FormData>;
@@ -28,40 +30,6 @@ const WATER_ADDITIONS = [
   { id: "other", label: "Other" },
 ];
 
-const DAILY_SUPPLEMENT_OPTIONS = [
-  "Magnesium",
-  "Vitamin D3",
-  "Vitamin K2",
-  "Vitamin E",
-  "Vitamin A",
-  "Trace Minerals",
-  "Omega-3 Fatty Acids",
-  "Creatine",
-];
-
-const SLEEP_SUPPLEMENT_OPTIONS = [
-  "Melatonin",
-  "Valerian Root",
-  "Apigenin",
-  "L-Theanine",
-  "5-HTP",
-  "Glycine",
-  "Chamomile Extract",
-  "Magnesium",
-  "GABA",
-  "Myo-Inositol",
-  "Jujube Seed",
-  "Hops",
-  "Vitamin D3",
-  "Iron",
-  "Diphenhydramine (e.g. Benadryl, Tylenol PM)",
-  "Doxylamine (e.g. NyQuil)",
-  "Other",
-];
-
-const inputCls =
-  "w-full rounded-lg border bg-background px-3 py-1.5 text-xs text-muted-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary focus:text-foreground transition-colors";
-
 export function LeadFoodSupplements({ form }: LeadFoodSupplementsProps) {
   const { register, setValue, watch } = form;
 
@@ -70,8 +38,6 @@ export function LeadFoodSupplements({ form }: LeadFoodSupplementsProps) {
   const caffeineSources = watch("caffeineSources") || [];
   const waterAdditions = watch("waterAdditions") || [];
   const hasLowNutrientHistory = watch("hasLowNutrientHistory");
-  const dailySupplements = watch("dailySupplements") || [];
-  const sleepSupplements = watch("sleepSupplements") || [];
 
   const hasCaffeine = caffeineSources.length > 0;
   const hasCaffeineOther = caffeineSources.includes("other");
@@ -97,48 +63,6 @@ export function LeadFoodSupplements({ form }: LeadFoodSupplementsProps) {
     if (!next.includes("other")) setValue("waterAdditionOther", undefined, { shouldDirty: true });
   }
 
-  // ── Daily supplement helpers ──
-  function isDailySelected(name: string) {
-    return dailySupplements.some((s) => s.name === name);
-  }
-
-  function toggleDailySupplement(name: string) {
-    if (isDailySelected(name)) {
-      setValue("dailySupplements", dailySupplements.filter((s) => s.name !== name), { shouldDirty: true });
-    } else {
-      setValue("dailySupplements", [...dailySupplements, { name, dosage: "", magnesiumForm: "" }], { shouldDirty: true });
-    }
-  }
-
-  function updateDailyField(name: string, field: "dosage" | "magnesiumForm", value: string) {
-    setValue(
-      "dailySupplements",
-      dailySupplements.map((s) => (s.name === name ? { ...s, [field]: value } : s)),
-      { shouldDirty: true }
-    );
-  }
-
-  // ── Sleep supplement helpers ──
-  function isSleepSelected(name: string) {
-    return sleepSupplements.some((s) => s.name === name);
-  }
-
-  function toggleSleepSupplement(name: string) {
-    if (isSleepSelected(name)) {
-      setValue("sleepSupplements", sleepSupplements.filter((s) => s.name !== name), { shouldDirty: true });
-    } else {
-      setValue("sleepSupplements", [...sleepSupplements, { name, dosage: "", magnesiumForm: "", otherDetails: "" }], { shouldDirty: true });
-    }
-  }
-
-  function updateSleepField(name: string, field: "magnesiumForm" | "otherDetails", value: string) {
-    setValue(
-      "sleepSupplements",
-      sleepSupplements.map((s) => (s.name === name ? { ...s, [field]: value } : s)),
-      { shouldDirty: true }
-    );
-  }
-
   return (
     <div className="px-6 py-8">
       <h1 className="text-center text-2xl font-bold text-foreground">
@@ -149,8 +73,7 @@ export function LeadFoodSupplements({ form }: LeadFoodSupplementsProps) {
       </p>
 
       <div className="mt-8 space-y-8">
-
-        {/* ── Meal timing ── */}
+        {/* Meal timing */}
         <div>
           <Label className="text-sm font-medium">
             What time was your first and last meal or snack yesterday?
@@ -192,9 +115,33 @@ export function LeadFoodSupplements({ form }: LeadFoodSupplementsProps) {
               </div>
             </div>
           </div>
+
+          <div className="mt-6">
+            <Label className="text-sm font-medium">
+              How reflective is this of a typical day of eating in the past 1–2 weeks?
+            </Label>
+            <p className="mt-1 text-xs text-muted-foreground">
+              0 = nothing like usual · 10 = exactly like a typical day
+            </p>
+            <div className="mt-3">
+              <ScorePicker
+                value={watch("mealTimingReflectivityScore")}
+                onChange={(v) =>
+                  setValue("mealTimingReflectivityScore", v, { shouldDirty: true })
+                }
+              />
+            </div>
+            <div className="mt-3">
+              <Textarea
+                rows={3}
+                placeholder="Anything different about yesterday vs. a typical day? Any pattern of variation in the last 1–2 weeks?"
+                {...register("mealTimingReflectivityNotes")}
+              />
+            </div>
+          </div>
         </div>
 
-        {/* ── Caffeine ── */}
+        {/* Caffeine */}
         <div>
           <Label className="text-sm font-medium">
             Any of these caffeine sources in the last 3 days?
@@ -257,7 +204,7 @@ export function LeadFoodSupplements({ form }: LeadFoodSupplementsProps) {
           )}
         </div>
 
-        {/* ── Water additions ── */}
+        {/* Water */}
         <div>
           <Label className="text-sm font-medium">
             Do you add any of the following to your drinking water?
@@ -292,7 +239,7 @@ export function LeadFoodSupplements({ form }: LeadFoodSupplementsProps) {
           )}
         </div>
 
-        {/* ── Past tests ── */}
+        {/* Past tests */}
         <div>
           <Label className="text-sm font-medium">
             Have past tests revealed any low or imbalanced nutrients, minerals, or biochemical markers?
@@ -332,138 +279,8 @@ export function LeadFoodSupplements({ form }: LeadFoodSupplementsProps) {
           )}
         </div>
 
-        {/* ── Daily supplements — inline-expanding pills ── */}
-        <div>
-          <Label className="text-sm font-medium">Daily supplements you take regularly</Label>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Select all that apply — tap to add dosage details.
-          </p>
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            {DAILY_SUPPLEMENT_OPTIONS.map((name) => {
-              const selected = isDailySelected(name);
-              const entry = dailySupplements.find((s) => s.name === name);
-
-              if (selected && entry) {
-                return (
-                  <div
-                    key={name}
-                    className="col-span-2 animate-in slide-in-from-top-1 duration-150 rounded-xl border-2 border-primary/40 bg-primary/5 px-4 py-3 space-y-2"
-                  >
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-semibold">{name}</p>
-                      <button
-                        type="button"
-                        onClick={() => toggleDailySupplement(name)}
-                        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        ✕ Remove
-                      </button>
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="Dosage (e.g., 400mg, 5000 IU)"
-                      value={entry.dosage}
-                      onChange={(e) => updateDailyField(name, "dosage", e.target.value)}
-                      className={inputCls}
-                    />
-                    {name === "Magnesium" && (
-                      <input
-                        type="text"
-                        placeholder="Form of magnesium (e.g., Glycinate, Citrate)"
-                        value={entry.magnesiumForm || ""}
-                        onChange={(e) => updateDailyField(name, "magnesiumForm", e.target.value)}
-                        className={inputCls}
-                      />
-                    )}
-                  </div>
-                );
-              }
-
-              return (
-                <button
-                  key={name}
-                  type="button"
-                  onClick={() => toggleDailySupplement(name)}
-                  className={`rounded-full border-2 px-4 py-2 text-sm font-medium text-left transition-colors ${pillStyles.unselected}`}
-                >
-                  {name}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* ── Sleep supplements — pills only; Magnesium expands for form ── */}
-        <div>
-          <Label className="text-sm font-medium">
-            Supplements you use or have used to help with sleep
-          </Label>
-          <p className="mt-1 text-xs text-muted-foreground">Select all that apply.</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {SLEEP_SUPPLEMENT_OPTIONS.map((name) => {
-              const selected = isSleepSelected(name);
-              const entry = sleepSupplements.find((s) => s.name === name);
-
-              if (selected && name === "Magnesium" && entry) {
-                return (
-                  <div
-                    key={name}
-                    className="w-full animate-in slide-in-from-top-1 duration-150 rounded-xl border-2 border-primary/40 bg-primary/5 px-4 py-3 space-y-2"
-                  >
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-semibold">{name}</p>
-                      <button
-                        type="button"
-                        onClick={() => toggleSleepSupplement(name)}
-                        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        ✕ Remove
-                      </button>
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="Form (e.g., Glycinate, L-Threonate, Citrate)"
-                      value={entry.magnesiumForm || ""}
-                      onChange={(e) => updateSleepField(name, "magnesiumForm", e.target.value)}
-                      className={inputCls}
-                    />
-                  </div>
-                );
-              }
-
-              return (
-                <button
-                  key={name}
-                  type="button"
-                  onClick={() => toggleSleepSupplement(name)}
-                  className={`rounded-full border-2 px-4 py-2 text-sm font-medium transition-colors ${
-                    selected ? pillStyles.selected : pillStyles.unselected
-                  }`}
-                >
-                  {name}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* ── Prescription medications ── */}
-        <div>
-          <Label className="text-sm font-medium">
-            Prescription medications or other treatments
-          </Label>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Rx, OTC medications, herbs not listed above — one per line.
-          </p>
-          <div className="mt-2">
-            <Textarea
-              rows={4}
-              placeholder={"e.g., Lexapro 10mg\nMetformin 500mg\nAshwagandha tincture"}
-              {...register("medications")}
-            />
-          </div>
-        </div>
-
+        {/* Supplements + medications */}
+        <SupplementSection form={form} />
       </div>
     </div>
   );

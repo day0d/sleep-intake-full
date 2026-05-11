@@ -1,11 +1,12 @@
 "use client";
 
 import { UseFormReturn } from "react-hook-form";
-import { FormData, ExerciseFrequency, ExerciseTiming, Variance } from "@/lib/types";
+import { FormData, ExerciseFrequency, ExerciseTiming } from "@/lib/types";
 import { cardStyles, pillStyles } from "@/lib/ui-styles";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { PillRow } from "@/components/ui/pill-row";
-import { VariancePills } from "@/components/ui/variance-pills";
+import { ScorePicker } from "@/components/ui/score-picker";
 
 interface MovementProps {
   form: UseFormReturn<FormData>;
@@ -50,14 +51,13 @@ const RECOVERY_SYMPTOMS = [
 ];
 
 export function Movement({ form }: MovementProps) {
-  const { setValue, watch } = form;
+  const { register, setValue, watch } = form;
 
   const exerciseTypes = watch("exerciseTypes") || [];
   const exerciseFrequency = watch("exerciseFrequency");
-  const exerciseFrequencyVariance = watch("exerciseFrequencyVariance");
   const exerciseTiming = watch("exerciseTiming") || [];
-  const exerciseTimingVariance = watch("exerciseTimingVariance");
   const exerciseRecoverySymptoms = watch("exerciseRecoverySymptoms") || [];
+  const reflectivityScore = watch("exerciseReflectivityScore");
 
   function toggleType(id: string) {
     const next = exerciseTypes.includes(id)
@@ -111,7 +111,9 @@ export function Movement({ form }: MovementProps) {
         </div>
 
         <div>
-          <Label className="text-sm font-medium">How many days per week?</Label>
+          <Label className="text-sm font-medium">
+            How many days last week did you exercise?
+          </Label>
           <div className="mt-3">
             <PillRow
               options={FREQUENCY_OPTIONS}
@@ -126,21 +128,9 @@ export function Movement({ form }: MovementProps) {
         </div>
 
         <div>
-          <Label className="text-sm font-medium">How consistent week-to-week?</Label>
-          <div className="mt-3">
-            <VariancePills
-              value={exerciseFrequencyVariance}
-              onChange={(v) =>
-                setValue("exerciseFrequencyVariance", v as Variance | undefined, {
-                  shouldDirty: true,
-                })
-              }
-            />
-          </div>
-        </div>
-
-        <div>
-          <Label className="text-sm font-medium">When do you usually exercise?</Label>
+          <Label className="text-sm font-medium">
+            When did you exercise last week?
+          </Label>
           <p className="mt-1 text-xs text-muted-foreground">Select all that apply.</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {TIMING_OPTIONS.map((t) => {
@@ -162,22 +152,32 @@ export function Movement({ form }: MovementProps) {
         </div>
 
         <div>
-          <Label className="text-sm font-medium">How consistent is that timing?</Label>
+          <Label className="text-sm font-medium">
+            How reflective was last week of the previous 3–4 weeks?
+          </Label>
+          <p className="mt-1 text-xs text-muted-foreground">
+            0 = nothing like usual · 10 = exactly like a typical week
+          </p>
           <div className="mt-3">
-            <VariancePills
-              value={exerciseTimingVariance}
+            <ScorePicker
+              value={reflectivityScore}
               onChange={(v) =>
-                setValue("exerciseTimingVariance", v as Variance | undefined, {
-                  shouldDirty: true,
-                })
+                setValue("exerciseReflectivityScore", v, { shouldDirty: true })
               }
+            />
+          </div>
+          <div className="mt-3">
+            <Textarea
+              rows={3}
+              placeholder="Anything different about last week vs. a typical week? Any pattern of variation in the past month?"
+              {...register("exerciseReflectivityNotes")}
             />
           </div>
         </div>
 
         <div>
           <Label className="text-sm font-medium">
-            Any of these exercise recovery symptoms?
+            Have you experienced any of these recovery symptoms recently?
           </Label>
           <p className="mt-1 text-xs text-muted-foreground">Select all that apply.</p>
           <div className="mt-3 flex flex-wrap gap-2">

@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { ChevronLeft, Loader2 } from "lucide-react";
 
 import { FormData } from "@/lib/types";
-import { basicsSchema } from "@/lib/schema";
+import { basicsSchema, sleepScheduleSchema } from "@/lib/schema";
 import { generateSubmissionId } from "@/lib/compress";
 import { ProgressBar } from "@/components/progress-bar";
 import { LeadBasics } from "@/components/lead-survey-steps/basics";
@@ -31,7 +31,8 @@ const TOTAL_STEPS = 7; // steps 0–5 = survey, step 6 = booking
 
 const STEP_SCHEMAS = [
   basicsSchema, // step 0: name + email required
-  null, null, null, null, null, null,
+  sleepScheduleSchema, // step 1: sleep patterns must total 100%
+  null, null, null, null, null,
 ];
 
 export default function LeadSurveyForm() {
@@ -39,6 +40,7 @@ export default function LeadSurveyForm() {
   const [submissionId] = useState(() => generateSubmissionId());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [stepError, setStepError] = useState<string | null>(null);
 
   const form = useForm<FormData>({
     defaultValues: {
@@ -71,9 +73,9 @@ export default function LeadSurveyForm() {
     },
   });
 
-  async function validateCurrentStep(): Promise<boolean> {
+  async function validateCurrentStep(): Promise<string | null> {
     const schema = STEP_SCHEMAS[step];
-    if (!schema) return true;
+    if (!schema) return null;
 
     form.clearErrors();
     const values = form.getValues();
@@ -84,14 +86,23 @@ export default function LeadSurveyForm() {
         const field = err.path.join(".") as keyof FormData;
         form.setError(field, { message: err.message });
       });
-      return false;
+      const fields = new Set(result.error.issues.map((i) => i.path[0]));
+      if (fields.has("name") && fields.has("email")) {
+        return "Name and email are required.";
+      }
+      return result.error.issues[0]?.message || "Please complete all required fields.";
     }
-    return true;
+    return null;
   }
 
   async function handleNext() {
-    const valid = await validateCurrentStep();
-    if (valid && step < TOTAL_STEPS - 1) {
+    const error = await validateCurrentStep();
+    if (error) {
+      setStepError(error);
+      return;
+    }
+    setStepError(null);
+    if (step < TOTAL_STEPS - 1) {
       setStep(step + 1);
       window.scrollTo(0, 0);
     }
@@ -100,6 +111,7 @@ export default function LeadSurveyForm() {
   function handleBack() {
     if (step > 0) {
       form.clearErrors();
+      setStepError(null);
       setStep(step - 1);
       window.scrollTo(0, 0);
     }
@@ -153,7 +165,7 @@ export default function LeadSurveyForm() {
     <main className="min-h-screen bg-background">
       {/* Top navigation bar */}
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-background px-4 py-3 shadow-sm">
-        {step > 0 ? (
+        {isBookingStep ? (
           <button
             type="button"
             onClick={handleBack}
@@ -238,9 +250,9 @@ export default function LeadSurveyForm() {
         </div>
       )}
 
-      {submitError && (
+      {(submitError || stepError) && (
         <div className="fixed bottom-20 left-4 right-4 mx-auto max-w-lg rounded-xl bg-red-50 p-3 text-center text-sm text-red-700 shadow-lg">
-          {submitError}
+          {submitError || stepError}
         </div>
       )}
     </main>

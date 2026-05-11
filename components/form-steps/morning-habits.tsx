@@ -1,61 +1,39 @@
 "use client";
 
 import { UseFormReturn } from "react-hook-form";
-import { FormData, AmSunExposure, AmSunDuration, AmPhoneWindow, FirstSocialWindow, Variance } from "@/lib/types";
+import { FormData } from "@/lib/types";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { PillRow } from "@/components/ui/pill-row";
-import { VariancePills } from "@/components/ui/variance-pills";
+import { MinuteScroll } from "@/components/ui/minute-scroll";
+import { ScorePicker } from "@/components/ui/score-picker";
+import { SunExposureSection } from "@/components/ui/sun-exposure-section";
 
 interface MorningHabitsProps {
   form: UseFormReturn<FormData>;
 }
 
-const SUN_EXPOSURE_OPTIONS: { id: AmSunExposure; label: string }[] = [
-  { id: "none", label: "I don't" },
-  { id: "<15m", label: "<15m" },
-  { id: "15-30m", label: "15–30m" },
-  { id: "30-60m", label: "30–60m" },
-  { id: "1-2h", label: "1–2h" },
-  { id: "later", label: "Later in day" },
-];
-
-const SUN_DURATION_OPTIONS: { id: AmSunDuration; label: string }[] = [
-  { id: "<2m", label: "<2m" },
-  { id: "3-5m", label: "3–5m" },
-  { id: "5-10m", label: "5–10m" },
-  { id: "10-15m", label: "10–15m" },
-  { id: "15+m", label: "15+m" },
-];
-
-const AM_PHONE_OPTIONS: { id: AmPhoneWindow; label: string }[] = [
-  { id: "in_bed", label: "In bed" },
-  { id: "within_15m", label: "Within 15m" },
-  { id: "30m-1h", label: "30m–1h" },
-  { id: "after_breakfast", label: "After breakfast" },
-  { id: "later", label: "Later" },
-];
-
-const SOCIAL_OPTIONS: { id: FirstSocialWindow; label: string }[] = [
-  { id: "<15m", label: "<15m" },
-  { id: "15-30m", label: "15–30m" },
-  { id: "30-60m", label: "30–60m" },
-  { id: "1-2h", label: "1–2h" },
-  { id: "2-4h", label: "2–4h" },
-  { id: "4h+", label: "4h+" },
-  { id: "varies", label: "Varies" },
-];
+function clampNum(val: string, min: number, max: number): number | undefined {
+  if (val.trim() === "") return undefined;
+  const n = Number(val);
+  if (Number.isNaN(n)) return undefined;
+  return Math.min(max, Math.max(min, n));
+}
 
 export function MorningHabits({ form }: MorningHabitsProps) {
   const { register, setValue, watch } = form;
 
-  const amSunExposure = watch("amSunExposure");
-  const amSunDuration = watch("amSunDuration");
-  const amSunVariance = watch("amSunVariance");
-  const amPhoneWindow = watch("amPhoneWindow");
-  const firstSocialWindow = watch("firstSocialWindow");
+  const amPhoneYesterday = watch("amPhoneYesterday");
+  const firstSocialYesterday = watch("firstSocialYesterday");
+  const firstSocialDaysLastWeek = watch("firstSocialDaysLastWeek");
+  const firstSocialOtherDelay = watch("firstSocialOtherDaysDelay");
 
-  const hasSunlight = amSunExposure && amSunExposure !== "none";
+  const showSocialOtherDays =
+    typeof firstSocialDaysLastWeek === "number" && firstSocialDaysLastWeek < 7;
+  const socialOtherCount =
+    typeof firstSocialDaysLastWeek === "number"
+      ? 7 - firstSocialDaysLastWeek
+      : 0;
 
   return (
     <div className="px-6 py-8">
@@ -65,6 +43,7 @@ export function MorningHabits({ form }: MorningHabitsProps) {
       </p>
 
       <div className="mt-8 space-y-8">
+        {/* Routine */}
         <div>
           <Label className="text-sm font-medium">Describe your morning routine</Label>
           <div className="mt-1.5">
@@ -75,86 +54,120 @@ export function MorningHabits({ form }: MorningHabitsProps) {
           </div>
         </div>
 
+        {/* Sun exposure */}
+        <SunExposureSection form={form} />
+
+        {/* Phone */}
         <div>
           <Label className="text-sm font-medium">
-            How soon after waking do you get direct sunlight?
+            When did you first look at your phone yesterday morning?
           </Label>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Direct sunlight = actual sun contact on your skin — outside or by an open window. Counts even on cloudy days; indoor light through glass does not count.
-          </p>
           <div className="mt-3">
-            <PillRow
-              options={SUN_EXPOSURE_OPTIONS}
-              value={amSunExposure}
+            <MinuteScroll
+              value={amPhoneYesterday}
               onChange={(v) =>
-                setValue("amSunExposure", v as AmSunExposure | undefined, { shouldDirty: true })
+                setValue("amPhoneYesterday", v, { shouldDirty: true })
               }
+              includeInBed
             />
           </div>
 
-          {hasSunlight && (
+          {typeof amPhoneYesterday === "number" && (
             <>
               <div className="mt-4 animate-in slide-in-from-top-2 duration-200">
-                <Label className="text-sm font-medium">How long do you get that direct sunlight?</Label>
-                <div className="mt-3">
-                  <PillRow
-                    options={SUN_DURATION_OPTIONS}
-                    value={amSunDuration}
-                    onChange={(v) =>
-                      setValue("amSunDuration", v as AmSunDuration | undefined, { shouldDirty: true })
-                    }
-                  />
-                </div>
+                <Label className="text-sm font-medium">
+                  Which apps / programs did you open first?
+                </Label>
+                <Input
+                  placeholder="e.g., Mail, Instagram, NYT"
+                  className="mt-3 h-12 rounded-xl text-base"
+                  {...register("amPhoneApps")}
+                />
               </div>
 
               <div className="mt-4 animate-in slide-in-from-top-2 duration-200">
-                <Label className="text-sm font-medium">How consistent is that timing?</Label>
-                <div className="mt-3">
-                  <VariancePills
-                    value={amSunVariance}
-                    onChange={(v) =>
-                      setValue("amSunVariance", v as Variance | undefined, { shouldDirty: true })
-                    }
+                <Label className="text-sm font-medium">
+                  In the past 1–2 weeks, what % of mornings does this pattern
+                  reflect?
+                </Label>
+                <div className="relative mt-3">
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    max={100}
+                    placeholder="e.g., 70"
+                    {...register("amPhonePctMornings", {
+                      setValueAs: (v) => clampNum(String(v ?? ""), 0, 100),
+                    })}
+                    className="h-12 w-full rounded-xl border bg-background px-3 pr-8 text-base focus:outline-none focus:ring-2 focus:ring-ring"
                   />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                    %
+                  </span>
                 </div>
               </div>
             </>
           )}
         </div>
 
+        {/* Social interaction */}
         <div>
           <Label className="text-sm font-medium">
-            When do you first look at your phone / screens?
-          </Label>
-          <div className="mt-3">
-            <PillRow
-              options={AM_PHONE_OPTIONS}
-              value={amPhoneWindow}
-              onChange={(v) =>
-                setValue("amPhoneWindow", v as AmPhoneWindow | undefined, { shouldDirty: true })
-              }
-            />
-          </div>
-        </div>
-
-        <div>
-          <Label className="text-sm font-medium">
-            How soon after waking do you have your first non-trivial social interaction of the day?
+            How soon after waking did you have your first non-trivial human
+            interaction yesterday?
           </Label>
           <p className="mt-1 text-xs text-muted-foreground">
             Trivial examples: interacting with strangers, retail workers, AI, etc.
           </p>
           <div className="mt-3">
-            <PillRow
-              options={SOCIAL_OPTIONS}
-              value={firstSocialWindow}
+            <MinuteScroll
+              value={firstSocialYesterday}
               onChange={(v) =>
-                setValue("firstSocialWindow", v as FirstSocialWindow | undefined, {
-                  shouldDirty: true,
-                })
+                setValue("firstSocialYesterday", v, { shouldDirty: true })
               }
             />
           </div>
+
+          {typeof firstSocialYesterday === "number" && (
+            <div className="mt-4 animate-in slide-in-from-top-2 duration-200">
+              <Label className="text-sm font-medium">
+                How many days last week did you follow that same pattern?
+              </Label>
+              <div className="mt-3">
+                <ScorePicker
+                  value={firstSocialDaysLastWeek}
+                  onChange={(v) =>
+                    setValue("firstSocialDaysLastWeek", v, {
+                      shouldDirty: true,
+                    })
+                  }
+                  min={0}
+                  max={7}
+                />
+              </div>
+            </div>
+          )}
+
+          {showSocialOtherDays && (
+            <div className="mt-4 animate-in slide-in-from-top-2 duration-200">
+              <Label className="text-sm font-medium">
+                On the {socialOtherCount} other day
+                {socialOtherCount === 1 ? "" : "s"}, how soon after waking did
+                you have non-trivial human interaction?
+              </Label>
+              <div className="mt-3">
+                <MinuteScroll
+                  value={firstSocialOtherDelay}
+                  onChange={(v) =>
+                    setValue("firstSocialOtherDaysDelay", v, {
+                      shouldDirty: true,
+                    })
+                  }
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
